@@ -1,18 +1,18 @@
 
-# UniRos Repository
+# UniROS Repository
 
 ## Overview
-This repository, `uniros`, is designed to integrate two separate repositories, `multiros` and `realros`, giving users the flexibility to use them either as standalone modules or as integrated parts of `uniros`.
+This repository, UniROS, is designed to integrate two separate repositories, [MultiROS](https://github.com/ncbdrck/multiros) and [RealROS](https://github.com/ncbdrck/realros), giving users the flexibility to use them either as standalone modules or as integrated parts of UniROS.
 
 ## Options for Setup
 There are two ways to set up this repository:
 
-1. **As an Integrated System (with Submodules):** Use this option if you do not have `multiros` and `realros` already set up. `uniros` will include both as submodules.
+1. **As an Integrated System (with Submodules):** Use this option if you do not have [MultiROS](https://github.com/ncbdrck/multiros) and [RealROS](https://github.com/ncbdrck/realros) already set up. UniROS will include both as submodules.
 
-2. **Using Existing `multiros` and `realros`:** Choose this if you already have these repositories cloned and set up independently. 
+2. **Using Existing MultiROS and RealROS:** Choose this if you already have these repositories cloned and set up independently. 
 
 ## Pre-Setup: Check Existing Repositories
-Before proceeding with the setup, determine if you already have `multiros` and `realros` on your system. Run the provided `check_repos.sh` script to automatically check for these repositories:
+Before proceeding with the setup, determine if you already have multiros and realros on your system. Run the provided `check_repos.sh` script to automatically check for these repositories:
 
 ```bash
 ./check_repos.sh
@@ -21,13 +21,13 @@ Before proceeding with the setup, determine if you already have `multiros` and `
 If the script finds the repositories, follow the instructions for using existing repositories. If not, proceed with the integrated system setup.
 
 ## Setup as an Integrated System
-If you do not have `multiros` and `realros`, or you wish to use them as submodules of `uniros`, follow these steps:
+If you do not have MultiROS and RealROS, or you wish to use them as submodules of `UniROS`, follow these steps:
 
 ```bash
 git clone --recurse-submodules https://github.com/ncbdrck/uniros
 ```
 
-## Setup Using Existing `multiros` and `realros`
+## Setup Using Existing MultiROS and RealROS
 If you have existing clones of `multiros` and `realros`, follow these instructions:
 
 ```bash
