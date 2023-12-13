@@ -1,0 +1,6 @@
+[submodule "multiros"]
+	path = multiros
+	url = https://github.com/ncbdrck/multiros.git
+[submodule "realros"]
+	path = realros
+	url = https://github.com/ncbdrck/realros.git
