@@ -27,6 +27,8 @@ If you do not have MultiROS and RealROS, or you wish to use them as submodules o
 git clone --recurse-submodules https://github.com/ncbdrck/uniros
 ```
 
+**Note:** MultiROS and RealROS have their own dependencies. Please follow the instructions in their respective repositories to install the dependencies.
+
 ## 2. Setup Using Existing MultiROS and RealROS
 If you have existing clones of `multiros` and `realros`, follow these instructions:
 
