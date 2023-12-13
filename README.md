@@ -38,7 +38,7 @@ git clone https://github.com/ncbdrck/uniros
 ```
 
 ## Script: `check_repos.sh`
-Below is the `check_repos.sh` script. Save this in your `uniros` directory and run it to check if `multiros` and `realros` are already downloaded.
+Below is the `check_repos.sh` script. Save this in your `home` directory and run it to check if `multiros` and `realros` are already downloaded.
 
 ```bash
 #!/bin/bash
@@ -53,8 +53,8 @@ is_git_repo() {
 }
 
 # Directories where multiros and realros might exist
-MULTIROS_DIR="path/to/multiros"
-REALROS_DIR="path/to/realros"
+MULTIROS_DIR="path/to/multiros"  # ~/catkin_ws/src/multiros
+REALROS_DIR="path/to/realros"  # ~/catkin_ws/src/multiros
 
 # Check multiros
 if [ -d "$MULTIROS_DIR" ] && is_git_repo $MULTIROS_DIR; then
@@ -72,6 +72,7 @@ fi
 ```
 
 Replace `path/to/multiros` and `path/to/realros` with the actual paths where you expect these repositories to be.
+Since we are working with ROS, the path typically should be in the format of `~/ros_workspace_ws/src/`.
 
 ## Cite
 
