@@ -54,7 +54,7 @@ is_git_repo() {
 
 # Directories where multiros and realros might exist
 MULTIROS_DIR="path/to/multiros"  # ~/catkin_ws/src/multiros
-REALROS_DIR="path/to/realros"  # ~/catkin_ws/src/multiros
+REALROS_DIR="path/to/realros"  # ~/catkin_ws/src/realros
 
 # Check multiros
 if [ -d "$MULTIROS_DIR" ] && is_git_repo $MULTIROS_DIR; then
