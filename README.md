@@ -20,14 +20,14 @@ Before proceeding with the setup, determine if you already have multiros and rea
 
 If the script finds the repositories, follow the instructions for using existing repositories. If not, proceed with the integrated system setup.
 
-## Setup as an Integrated System
+## 1. Setup as an Integrated System
 If you do not have MultiROS and RealROS, or you wish to use them as submodules of `UniROS`, follow these steps:
 
 ```bash
 git clone --recurse-submodules https://github.com/ncbdrck/uniros
 ```
 
-## Setup Using Existing MultiROS and RealROS
+## 2. Setup Using Existing MultiROS and RealROS
 If you have existing clones of `multiros` and `realros`, follow these instructions:
 
 ```bash
@@ -71,3 +71,49 @@ fi
 
 Replace `path/to/multiros` and `path/to/realros` with the actual paths where you expect these repositories to be.
 
+## Cite
+
+If you use UniROS in your research or work and would like to cite it, you can use the following citation:
+
+Article:
+```bibtex
+@inproceedings{kapukotuwa_multiros_2022,
+	title = {{MultiROS}: {ROS}-{Based} {Robot} {Simulation} {Environment} for {Concurrent} {Deep} {Reinforcement} {Learning}},
+	shorttitle = {{MultiROS}},
+	doi = {10.1109/CASE49997.2022.9926475},
+	booktitle = {2022 {IEEE} 18th {International} {Conference} on {Automation} {Science} and {Engineering} ({CASE})},
+	author = {Kapukotuwa, Jayasekara and Lee, Brian and Devine, Declan and Qiao, Yuansong},
+	month = aug,
+	year = {2022},
+	note = {ISSN: 2161-8089},
+	pages = {1098--1103},
+}
+```
+
+Repositories:
+
+```bibtex
+@misc{realros,
+  author = {Kapukotuwa, Jayasekara},
+  booktitle = {GitHub repository},
+  publisher = {GitHub},
+  title = {RealROS: A Comprehensive Framework for Real-World Robotic Reinforcement Learning},
+  url = {https://github.com/ncbdrck/realros},
+  year = {2023}
+}
+```
+
+```bibtex
+@misc{multiros,
+  author = {Kapukotuwa, Jayasekara},
+  booktitle = {GitHub repository},
+  publisher = {GitHub},
+  title = {MultiROS: ROS-Based Robot Simulation Environment for Concurrent Deep Reinforcement Learning},
+  url = {https://github.com/ncbdrck/multiros},
+  year = {2022}
+}
+```
+
+## Contact
+
+For questions, suggestions, or collaborations, feel free to reach out to the project maintainer at [j.kapukotuwa@research.ait.ie](mailto:j.kapukotuwa@research.ait.ie).
