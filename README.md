@@ -1,6 +1,12 @@
 
 # UniROS: ROS-Based Reinforcement Learning Across Simulated and Real-world Robotics
 
+A comprehensive framework for reinforcement learning in robotics,
+which allows users to train their robots in both simulated and real-world environments concurrently.
+It simplifies the process of creating reinforcement learning environments for robots
+and provides a unified interface for training
+and evaluating the robots in both simulated and real-world environments.
+
 ## Overview
 This repository, UniROS, is designed to integrate two separate repositories, [MultiROS](https://github.com/ncbdrck/multiros) and [RealROS](https://github.com/ncbdrck/realros), giving users the flexibility to use them either as standalone modules or as integrated parts of UniROS.
 
