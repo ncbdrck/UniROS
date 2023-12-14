@@ -75,14 +75,14 @@ git clone https://github.com/ncbdrck/uniros
          max_episode_steps=1000,
     )
     ```
-- Finally instead of using `import gym` and then `gym.make('MyEnv-v0')` use the following to create the environment. This will create separate processes for each environment making it possible to run multiple environments in parallel.
+- Finally instead of using `import gym` and then `gym.make('MyEnv-v0')` use the following to create the environment. This will create **separate processes** for each environment, making it possible to run multiple environments in parallel.
     ```python
     # for both simulated and real environments
     import uniros as gym
     env = gym.make('MyEnv-v0')
     ```
 
-## Script: `check_repos.sh`
+## Scripheck_repos.sh`
 Below is the `check_repos.sh` script. Save this in your `home` directory and run it to check if `multiros` and `realros` are already downloaded.
 
 ```bash
@@ -100,7 +100,7 @@ is_git_repo() {
 # Directories where multiros and realros might exist
 MULTIROS_DIR="path/to/multiros"  # ~/catkin_ws/src/multiros
 REALROS_DIR="path/to/realros"  # ~/catkin_ws/src/realros
-
+t: `c
 # Check multiros
 if [ -d "$MULTIROS_DIR" ] && is_git_repo $MULTIROS_DIR; then
     echo "multiros repository found."
