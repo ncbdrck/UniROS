@@ -24,7 +24,21 @@ If the script finds the repositories, follow the instructions for using existing
 If you do not have MultiROS and RealROS, or you wish to use them as submodules of `UniROS`, follow these steps:
 
 ```bash
+cd ~/catkin_ws/src
 git clone --recurse-submodules https://github.com/ncbdrck/uniros
+
+# Install pip if you haven't already by running this command
+sudo apt-get install python3-pip
+
+# install the required Python packages for UniROS by running
+cd ~/catkin_ws/src/uniros/uniros/
+pip3 install -r requirements.txt
+
+# build the workspace
+cd ~/catkin_ws
+rosdep install --from-paths src --ignore-src -r -y
+catkin build
+source devel/setup.bash
 ```
 
 **Note:** MultiROS and RealROS have their own dependencies. Please follow the instructions in their respective repositories to install the dependencies.
@@ -33,8 +47,10 @@ git clone --recurse-submodules https://github.com/ncbdrck/uniros
 If you have existing clones of `multiros` and `realros`, follow these instructions:
 
 ```bash
+cd ~/catkin_ws/src
 git clone https://github.com/ncbdrck/uniros
 
+# continue with the installation as above
 ```
 
 ## Usage
@@ -108,7 +124,7 @@ Since we are working with ROS, the path typically should be in the format of `~/
 
 If you use UniROS in your research or work and would like to cite it, you can use the following citation:
 
-Article:
+Articles:
 ```bibtex
 @inproceedings{kapukotuwa_multiros_2022,
 	title = {{MultiROS}: {ROS}-{Based} {Robot} {Simulation} {Environment} for {Concurrent} {Deep} {Reinforcement} {Learning}},
@@ -122,28 +138,15 @@ Article:
 	pages = {1098--1103},
 }
 ```
-
-Repositories:
-
+Repository:
 ```bibtex
-@misc{realros,
+@misc{uniros,
   author = {Kapukotuwa, Jayasekara},
   booktitle = {GitHub repository},
   publisher = {GitHub},
-  title = {RealROS: A Comprehensive Framework for Real-World Robotic Reinforcement Learning},
-  url = {https://github.com/ncbdrck/realros},
+  title = {UniROS: ROS-Based Reinforcement Learning Across Simulated and Real-world Robotics},
+  url = {https://github.com/ncbdrck/uniros},
   year = {2023}
-}
-```
-
-```bibtex
-@misc{multiros,
-  author = {Kapukotuwa, Jayasekara},
-  booktitle = {GitHub repository},
-  publisher = {GitHub},
-  title = {MultiROS: ROS-Based Robot Simulation Environment for Concurrent Deep Reinforcement Learning},
-  url = {https://github.com/ncbdrck/multiros},
-  year = {2022}
 }
 ```
 
