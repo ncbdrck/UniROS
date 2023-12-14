@@ -37,6 +37,36 @@ git clone https://github.com/ncbdrck/uniros
 
 ```
 
+## Usage
+
+- Once you have set up UniROS, which includes MultiROS and RealROS, you can use each package to create reinforcement learning environments for your robots. 
+- You can follow the instructions in the respective repositories to create your own environments. Use the provided examples as a starting point.
+- Then, register the created environment with openai gym.  
+```python
+# gym registration - example
+
+import gym
+gym.envs.register(
+     id='MyEnv-v0',
+     entry_point='gym.envs.classic_control:MyEnv',
+     max_episode_steps=1000,
+)
+```
+- Finally instead of using `gym.make('MyEnv-v0')` use the following to create the environment.
+```python
+# for both simulated and real environments
+import uniros as gym
+gym.make('MyEnv-v0')
+
+# or if it is a simulated environment
+import multiros as gym
+gym.make('MyEnv-v0')
+
+# or if it is a real environment
+import realros as gym
+gym.make('MyEnv-v0')
+```
+
 ## Script: `check_repos.sh`
 Below is the `check_repos.sh` script. Save this in your `home` directory and run it to check if `multiros` and `realros` are already downloaded.
 
