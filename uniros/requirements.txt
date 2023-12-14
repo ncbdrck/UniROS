@@ -1,0 +1,7 @@
+# UniROS requirements
+
+# To install required packages use:
+# python3 -m pip install -r requirements.txt
+
+# Gym library for reinforcement learning environments
+gym>=0.17.0, <= 0.21.0
