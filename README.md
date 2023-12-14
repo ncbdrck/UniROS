@@ -69,7 +69,7 @@ git clone https://github.com/ncbdrck/uniros
          max_episode_steps=1000,
     )
     ```
-- Finally instead of using `import gym` and then `gym.make('MyEnv-v0')` use the following to create the environment.
+- Finally instead of using `import gym` and then `gym.make('MyEnv-v0')` use the following to create the environment. This will create separate processes for each environment making it possible to run multiple environments in parallel.
     ```python
     # for both simulated and real environments
     import uniros as gym
