@@ -56,7 +56,7 @@ git clone https://github.com/ncbdrck/uniros
 ## Usage
 
 - Once you have set up UniROS, which includes MultiROS and RealROS, you can use each package to create reinforcement learning environments for your robots. 
-- You can follow the instructions in the respective repositories to create your own environments. Use the provided examples as a starting point.
+- You can follow the instructions in the respective repositories to create your own environments. Use the provided [examples](https://github.com/ncbdrck/reactorx200_ros_reacher) as a starting point.
 - Then, register the created environment with openai gym.  
 ```python
 # gym registration - example
