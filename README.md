@@ -80,14 +80,6 @@ git clone https://github.com/ncbdrck/uniros
     # for both simulated and real environments
     import uniros as gym
     env = gym.make('MyEnv-v0')
-    
-    # or if it is a simulated environment
-    import multiros as gym
-    env = gym.make('MyEnv-v0')
-    
-    # or if it is a real environment
-    import realros as gym
-    env = gym.make('MyEnv-v0')
     ```
 
 ## Script: `check_repos.sh`
