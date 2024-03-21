@@ -1,6 +1,6 @@
 #!/bin/python3
 
-import gym
+import gymnasium as gym
 from multiprocessing import Process, Pipe
 
 """
@@ -42,7 +42,7 @@ class uniros_gym:
                 conn.send(env.step(data))
 
             elif cmd == 'reset':
-                conn.send(env.reset())
+                conn.send(env.reset(*data))
 
             elif cmd == 'close':
                 env.close()
@@ -53,7 +53,7 @@ class uniros_gym:
                 try:
                     attr = getattr(env, data)
 
-                    # If the attribute is callable (i.e., a method),
+                    # If the attribute is callable (i.e. a method),
                     # send a special string 'callable' to the main process
                     if callable(attr):
                         conn.send('callable')
@@ -91,9 +91,9 @@ class uniros_gym:
         # Receive and return the result of taking a step in the environment
         return self.parent_conn.recv()
 
-    def reset(self):
+    def reset(self,  *args, **kwargs):
         # Send a 'reset' command to the worker process
-        self.parent_conn.send(('reset', None))
+        self.parent_conn.send(('reset', (args, kwargs)))
         # Receive and return the initial observation of the environment after resetting it
         return self.parent_conn.recv()
 
