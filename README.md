@@ -31,7 +31,7 @@ If you do not have MultiROS and RealROS, or you wish to use them as submodules o
 
 ```bash
 cd ~/catkin_ws/src
-git clone --recurse-submodules https://github.com/ncbdrck/uniros
+git clone --recurse-submodules -b gymnasium https://github.com/ncbdrck/uniros
 
 # Install pip if you haven't already by running this command
 sudo apt-get install python3-pip
@@ -63,11 +63,11 @@ git clone https://github.com/ncbdrck/uniros
 
 - Once you have set up UniROS, which includes MultiROS and RealROS, you can use each package to create reinforcement learning environments for your robots. 
 - You can follow the instructions in the respective repositories to create your own environments. Use the provided [examples](https://github.com/ncbdrck/reactorx200_ros_reacher) as a starting point.
-- Then, register the created environment with openai gym.  
+- Then, register the created environment with gymnasium.  
 
     ```python
-    # gym registration - example
-    from gym.envs.registration import register
+    # gymnasium registration - example
+    from gymnasium.envs.registration import register
     
     register(
          id='MyEnv-v0',
@@ -75,7 +75,7 @@ git clone https://github.com/ncbdrck/uniros
          max_episode_steps=1000,
     )
     ```
-- Finally instead of using `import gym` and then `gym.make('MyEnv-v0')` use the following to create the environment. This will create **separate processes** for each environment, making it possible to run multiple environments in parallel.
+- Finally instead of using `import gymnasium as gym` and then `gym.make('MyEnv-v0')` use the following to create the environment. This will create **separate processes** for each environment, making it possible to run multiple environments in parallel.
     ```python
     # for both simulated and real environments
     import uniros as gym
