@@ -31,7 +31,7 @@ If you do not have MultiROS and RealROS, or you wish to use them as submodules o
 
 ```bash
 cd ~/catkin_ws/src
-git clone --recurse-submodules https://github.com/ncbdrck/uniros
+git clone --recurse-submodules -b openai_gym https://github.com/ncbdrck/uniros
 
 # Install pip if you haven't already by running this command
 sudo apt-get install python3-pip
@@ -54,7 +54,7 @@ If you have existing clones of `multiros` and `realros`, follow these instructio
 
 ```bash
 cd ~/catkin_ws/src
-git clone https://github.com/ncbdrck/uniros
+git clone -b openai_gym https://github.com/ncbdrck/uniros
 
 # continue with the installation as above
 ```
