@@ -1,6 +1,9 @@
 [submodule "multiros"]
 	path = multiros
 	url = https://github.com/ncbdrck/multiros.git
+	branch = openai_gym
+	
 [submodule "realros"]
 	path = realros
 	url = https://github.com/ncbdrck/realros.git
+	branch = openai_gym
