@@ -1,6 +1,8 @@
 [submodule "multiros"]
 	path = multiros
 	url = https://github.com/ncbdrck/multiros.git
+	branch = gymnasium
 [submodule "realros"]
 	path = realros
 	url = https://github.com/ncbdrck/realros.git
+	branch = gymnasium
