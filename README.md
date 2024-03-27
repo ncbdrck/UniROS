@@ -33,11 +33,15 @@ If you do not have MultiROS and RealROS, or you wish to use them as submodules o
 cd ~/catkin_ws/src
 git clone --recurse-submodules -b openai_gym https://github.com/ncbdrck/uniros
 
+# update the submodules to the latest version
+cd UniROS
+git submodule update --remote --recursive
+
 # Install pip if you haven't already by running this command
 sudo apt-get install python3-pip
 
 # install the required Python packages for UniROS by running
-cd ~/catkin_ws/src/uniros/uniros/
+cd ~/catkin_ws/src/UniROS/uniros/
 pip3 install -r requirements.txt
 
 # build the workspace
@@ -57,6 +61,17 @@ cd ~/catkin_ws/src
 git clone -b openai_gym https://github.com/ncbdrck/uniros
 
 # continue with the installation as above
+```
+**Note**: Make sure that the branches of `multiros` and `realros` are set to `openai_gym`. If not, switch to the `openai_gym` branch in each repository.
+
+```bash
+cd ~/catkin_ws/src/multiros  # or the path where multiros is located
+git checkout openai_gym  # switch to the openai_gym branch
+git pull  # update the repository
+
+cd ~/catkin_ws/src/realros  # or the path where realros is located
+git checkout openai_gym  # switch to the openai_gym branch
+git pull  # update the repository
 ```
 
 ## Usage
