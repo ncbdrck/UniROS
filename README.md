@@ -33,6 +33,10 @@ If you do not have MultiROS and RealROS, or you wish to use them as submodules o
 cd ~/catkin_ws/src
 git clone --recurse-submodules -b gymnasium https://github.com/ncbdrck/uniros
 
+# update the submodules to the latest version
+cd uniros
+git submodule update --remote --recursive
+
 # Install pip if you haven't already by running this command
 sudo apt-get install python3-pip
 
@@ -58,6 +62,18 @@ git clone-b gymnasium  https://github.com/ncbdrck/uniros
 
 # continue with the installation as above
 ```
+**Note:** Make sure that the branches of `multiros` and `realros` are set to `gymnasium`. If not, you can switch to the `gymnasium` branch by running the following commands:
+
+```bash
+cd ~/catkin_ws/src/multiros  # or the path to your multiros repository
+git checkout gymnasium  # switch to the gymnasium branch
+git pull  # to update the repository
+
+cd ~/catkin_ws/src/realros  # or the path to your realros repository
+git checkout gymnasium  # switch to the gymnasium branch
+git pull  # to update the repository
+```
+
 
 ## Usage
 
