@@ -4,5 +4,5 @@
 # python3 -m pip install -r requirements.txt
 
 # Gym library for reinforcement learning environments
-gymnasium
-gymnasium_robotics
+gymnasium==0.29.1
+gymnasium_robotics==1.2.4

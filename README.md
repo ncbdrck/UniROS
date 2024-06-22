@@ -27,21 +27,21 @@ Before proceeding with the setup, determine if you already have multiros and rea
 If the script finds the repositories, follow the instructions for using existing repositories. If not, proceed with the integrated system setup.
 
 ## 1. Setup as an Integrated System
-If you do not have MultiROS and RealROS, or you wish to use them as submodules of `UniROS`, follow these steps:
+If you do not have `MultiROS` and `RealROS`, or you wish to use them as submodules of `UniROS`, follow these steps:
 
 ```bash
 cd ~/catkin_ws/src
 git clone --recurse-submodules -b gymnasium https://github.com/ncbdrck/uniros
 
 # update the submodules to the latest version
-cd UniROS
+cd uniros
 git submodule update --remote --recursive
 
 # Install pip if you haven't already by running this command
 sudo apt-get install python3-pip
 
 # install the required Python packages for UniROS by running
-cd ~/catkin_ws/src/UniROS/uniros/
+cd ~/catkin_ws/src/uniros/uniros/
 pip3 install -r requirements.txt
 
 # build the workspace
