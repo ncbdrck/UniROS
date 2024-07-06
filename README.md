@@ -34,14 +34,14 @@ cd ~/catkin_ws/src
 git clone --recurse-submodules -b gymnasium https://github.com/ncbdrck/uniros
 
 # update the submodules to the latest version
-cd uniros
+cd UniROS
 git submodule update --remote --recursive
 
 # Install pip if you haven't already by running this command
 sudo apt-get install python3-pip
 
 # install the required Python packages for UniROS by running
-cd ~/catkin_ws/src/uniros/uniros/
+cd ~/catkin_ws/src/UniROS/uniros/
 pip3 install -r requirements.txt
 
 # build the workspace
