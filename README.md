@@ -58,7 +58,7 @@ If you have existing clones of `multiros` and `realros`, follow these instructio
 
 ```bash
 cd ~/catkin_ws/src
-git clone-b gymnasium  https://github.com/ncbdrck/uniros
+git clone -b gymnasium  https://github.com/ncbdrck/uniros
 
 # continue with the installation as above
 ```
