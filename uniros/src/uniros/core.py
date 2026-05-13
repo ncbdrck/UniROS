@@ -20,6 +20,9 @@ from multiprocessing import Process, Pipe
 
 class uniros_gym:
     def __init__(self, env_name, *args, **kwargs):
+        # Set _closed first so close() / __del__ can be idempotent even if
+        # the rest of __init__ raises before completing.
+        self._closed = False
         # Create a pipe for communication between the main process and the worker process
         self.parent_conn, self.child_conn = Pipe()
         # Start the worker process and pass it the environment name, the child connection, and any additional arguments
@@ -99,10 +102,20 @@ class uniros_gym:
         return self.parent_conn.recv()
 
     def close(self):
-        # Send a 'close' command to the worker process to close the environment
-        self.parent_conn.send(('close', None))
-        # Wait for the worker process to terminate before returning
-        self.process.join()
+        # Idempotent close: safe to call multiple times and from __del__.
+        if self._closed:
+            return
+        self._closed = True
+        try:
+            self.parent_conn.send(('close', None))
+        except (BrokenPipeError, OSError, EOFError):
+            # Worker already exited or pipe already torn down.
+            pass
+        # Bounded join so a hung worker can't lock the parent indefinitely.
+        self.process.join(timeout=5.0)
+        if self.process.is_alive():
+            self.process.terminate()
+            self.process.join(timeout=1.0)
 
     def __getattr__(self, name):
         # Send a 'get_attribute' command to the worker process along with the name of the attribute
@@ -134,7 +147,9 @@ class uniros_gym:
             return attr
 
     def __del__(self):
-        # Send a 'close' command to the worker process to close the environment
-        self.parent_conn.send(('close', None))
-        # Wait for the worker process to terminate before returning
-        self.process.join()
+        # Destructors must never raise. Swallow everything; close() already
+        # absorbs the common cases (pipe closed, process gone) on its own.
+        try:
+            self.close()
+        except Exception:
+            pass
