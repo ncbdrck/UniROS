@@ -1,21 +1,46 @@
 #!/bin/python3
 
+import traceback
 import gymnasium as gym
 from multiprocessing import Process, Pipe
 
 """
-    This is the main class for the UniROS package. 
-    It is a wrapper around the OpenAI Gym environment class.
-    It allows the user to create an instance of the environment in a separate process.
-    This is useful when the environment is a ROS node that needs to be run in a separate process.
-    The class has the same methods and attributes as the OpenAI Gym environment class.
-    The methods and attributes are forwarded to the environment in the worker process.
+    This is the main class for the UniROS package.
 
     Usage:
         from uniros.core import uniros_gym as gym
         env = gym.make("env_name", args)
         env.reset()
 """
+
+
+class _RemoteException:
+    """
+    Pickle-safe carrier for a worker-side exception + traceback.
+
+    The worker process catches every uncaught exception and ships an
+    instance of this class back through the pipe; the parent's _recv()
+    detects it and re-raises a RuntimeError with the worker-side
+    traceback embedded. Without this carrier a worker-side raise would
+    kill the worker silently and the parent's next recv() would block
+    forever.
+
+    We deliberately keep only string state (not the original exception
+    object) because some user-defined exception classes don't pickle
+    cleanly across process boundaries.
+    """
+    __slots__ = ('exc_type_name', 'exc_repr', 'tb_string')
+
+    def __init__(self, exc, tb_string):
+        self.exc_type_name = type(exc).__name__
+        self.exc_repr = repr(exc)
+        self.tb_string = tb_string
+
+    def reraise(self):
+        raise RuntimeError(
+            f"Exception in uniros_gym worker process "
+            f"({self.exc_type_name}: {self.exc_repr}):\n{self.tb_string}"
+        )
 
 
 class uniros_gym:
@@ -34,58 +59,100 @@ class uniros_gym:
 
     @staticmethod
     def worker(env_name, conn, *args, **kwargs):
-        # Create the environment using the gym.make function and pass it any additional arguments
-        env = gym.make(env_name, *args, **kwargs)
-        # Send the observation and action spaces to the main process
-        conn.send((env.observation_space, env.action_space))
-        # Continuously receive commands from the main process and perform the corresponding actions on the environment
+        # --- Startup phase --------------------------------------------------
+        # If gym.make() raises, the parent is blocked on recv() in make().
+        # Send a _RemoteException so the parent can re-raise it and close,
+        # rather than hanging forever.
+        try:
+            env = gym.make(env_name, *args, **kwargs)
+            conn.send((env.observation_space, env.action_space))
+        except Exception as e:
+            try:
+                conn.send(_RemoteException(e, traceback.format_exc()))
+            except (BrokenPipeError, OSError):
+                pass
+            try:
+                conn.close()
+            except Exception:
+                pass
+            return
+
+        # --- Command loop ---------------------------------------------------
+        # Every command is wrapped: any user-side raise (bad action, NaN
+        # observation, controller_manager timeout, MoveIt crash, etc.)
+        # surfaces to the parent as a _RemoteException instead of killing
+        # the worker silently.
         while True:
-            cmd, data = conn.recv()
-            if cmd == 'step':
-                conn.send(env.step(data))
+            try:
+                cmd, data = conn.recv()
+            except (EOFError, BrokenPipeError, ConnectionResetError):
+                # Parent has gone away; exit cleanly.
+                return
 
-            elif cmd == 'reset':
-                seed, options = data
-                conn.send(env.reset(seed=seed, options=options))
-
-            elif cmd == 'close':
-                env.close()
-                break
-
-            elif cmd == 'get_attribute':
-                # If the command is 'get_attribute', get the value of the specified attribute from the environment
-                try:
-                    attr = getattr(env, data)
-
-                    # If the attribute is callable (i.e. a method),
-                    # send a special string 'callable' to the main process
-                    if callable(attr):
-                        conn.send('callable')
-
-                    # Otherwise, send the value of the attribute to the main process
+            try:
+                if cmd == 'step':
+                    result = env.step(data)
+                elif cmd == 'reset':
+                    seed, options = data
+                    result = env.reset(seed=seed, options=options)
+                elif cmd == 'close':
+                    env.close()
+                    try:
+                        conn.close()
+                    except Exception:
+                        pass
+                    return
+                elif cmd == 'get_attribute':
+                    # AttributeError is a normal API response here ("attr
+                    # not found"); pass it through as a value so the
+                    # parent's __getattr__ can re-raise it client-side.
+                    # Any OTHER exception still flows through the outer
+                    # except and becomes a _RemoteException.
+                    try:
+                        attr = getattr(env, data)
+                    except AttributeError:
+                        result = AttributeError(f"{data} not found")
                     else:
-                        conn.send(attr)
-
-                # If the attribute does not exist in the environment, send an AttributeError to the main process
-                except AttributeError:
-                    conn.send(AttributeError(f"{data} not found"))
-
-            elif cmd == 'call_method':
-                # If the command is 'call_method', get the name of the method and its arguments from the data
-                method_name, args, kwargs = data
-
-                # Call the specified method on the environment with the provided arguments and keyword arguments
-                result = getattr(env, method_name)(*args, **kwargs)
-
-                # Send the result of calling the method back to the main process
+                        result = 'callable' if callable(attr) else attr
+                elif cmd == 'call_method':
+                    method_name, m_args, m_kwargs = data
+                    result = getattr(env, method_name)(*m_args, **m_kwargs)
+                else:
+                    raise ValueError(f"Unknown command from parent: {cmd!r}")
                 conn.send(result)
+            except Exception as e:
+                try:
+                    conn.send(_RemoteException(e, traceback.format_exc()))
+                except (BrokenPipeError, OSError):
+                    return
+
+    def _recv(self):
+        """
+        Receive a message from the worker, re-raising any remote exception.
+
+        Every parent-side recv() goes through this so a worker-side raise
+        becomes a parent-side RuntimeError (with the worker traceback)
+        rather than a silent hang on the next recv().
+        """
+        msg = self.parent_conn.recv()
+        if isinstance(msg, _RemoteException):
+            # If the worker died, also tear down our side cleanly so the
+            # caller doesn't have to remember to call close() after the
+            # exception.
+            self._closed = True
+            self.process.join(timeout=2.0)
+            if self.process.is_alive():
+                self.process.terminate()
+            msg.reraise()
+        return msg
 
     @classmethod
     def make(cls, env_name, *args, **kwargs):
         # Create an instance of the uniros_gym class and pass it the environment name and any additional arguments
         env = cls(env_name, *args, **kwargs)
-        # Receive the observation and action spaces from the worker process and set them on the instance
-        env.observation_space, env.action_space = env.parent_conn.recv()
+        # Receive the observation and action spaces from the worker process and set them on the instance.
+        # If the worker raised during gym.make(), _recv() re-raises here.
+        env.observation_space, env.action_space = env._recv()
         # Return the instance of the uniros_gym class
         return env
 
@@ -93,13 +160,13 @@ class uniros_gym:
         # Send a 'step' command to the worker process along with the action to take
         self.parent_conn.send(('step', action))
         # Receive and return the result of taking a step in the environment
-        return self.parent_conn.recv()
+        return self._recv()
 
     def reset(self, seed=None, options=None):
         # Send a 'reset' command to the worker process
         self.parent_conn.send(('reset', (seed, options)))
         # Receive and return the initial observation of the environment after resetting it
-        return self.parent_conn.recv()
+        return self._recv()
 
     def close(self):
         # Idempotent close: safe to call multiple times and from __del__.
@@ -121,8 +188,11 @@ class uniros_gym:
         # Send a 'get_attribute' command to the worker process along with the name of the attribute
         self.parent_conn.send(('get_attribute', name))
 
-        # Receive the value of the attribute from the worker process
-        attr = self.parent_conn.recv()
+        # Receive the value of the attribute from the worker process.
+        # _recv() unwraps any _RemoteException; a normal AttributeError
+        # (attr not found) still flows through as a value and is re-raised
+        # below for backwards compatibility.
+        attr = self._recv()
 
         # If the received value is a string, and it is equal to 'callable'
         if isinstance(attr, str) and attr == 'callable':
@@ -133,12 +203,13 @@ class uniros_gym:
                 self.parent_conn.send(('call_method', (name, args, kwargs)))
 
                 # Receive and return the result of calling the method in the worker process
-                return self.parent_conn.recv()
+                return self._recv()
 
             # Return the newly defined method
             return method
 
-        # If the received value is an Exception, raise it
+        # If the received value is an Exception (e.g. AttributeError for
+        # "attr not found"), raise it client-side.
         elif isinstance(attr, Exception):
             raise attr
 
