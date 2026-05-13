@@ -126,6 +126,25 @@ class uniros_gym:
                 except (BrokenPipeError, OSError):
                     return
 
+    @property
+    def unwrapped(self):
+        """
+        Return self as the unwrapped env.
+
+        The proxy IS the user-visible env from the parent's perspective;
+        whatever lives in the worker process is opaque and not accessible
+        across the pipe (gym.Env instances typically hold non-picklable
+        state such as _thread.RLock from rospy's spinner threads, so
+        sending them through the pipe raises TypeError).
+
+        Without this handler, env.unwrapped would route through
+        __getattr__, IPC to the worker, and fail to pickle. SB3's
+        DummyVecEnv calls `id(env.unwrapped)` for uniqueness checking
+        during construction, so this property is required for SB3
+        compatibility.
+        """
+        return self
+
     def _recv(self):
         """
         Receive a message from the worker, re-raising any remote exception.
