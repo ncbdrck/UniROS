@@ -31,13 +31,15 @@ jobs:
         working-directory: uniros
         run: |
           python -m pip install --upgrade pip
-          # catkin_pkg is needed because setup.py uses generate_distutils_setup.
-          # We do NOT install ROS itself; tests stub the rospy ecosystem in conftest.py.
-          pip install catkin_pkg pytest
+          # The package's setup.py imports catkin_pkg + uses distutils (from
+          # stdlib up to 3.11). Install build deps in the OUTER env, then
+          # pip install -e with --no-build-isolation so the build subprocess
+          # can see them. Without --no-build-isolation, pip creates a clean
+          # build sandbox and catkin_pkg won't be visible there.
+          pip install setuptools wheel catkin_pkg pytest
           pip install gymnasium gymnasium_robotics numpy
-          # Install uniros as an editable package so `import uniros` resolves
-          # to the working tree we just checked out.
-          pip install -e .
+          # Tests stub the rospy ecosystem in conftest.py; no ROS install needed.
+          pip install -e . --no-build-isolation
 
       - name: Run pytest
         working-directory: uniros
