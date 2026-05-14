@@ -185,6 +185,34 @@ class TestIdempotentClose:
         del env  # __del__ calls close again; must not raise
 
 
+class TestContextManager:
+    """`with uniros.make(...) as env:` cleans up on both success and exception."""
+
+    def test_with_block_closes_on_success(self):
+        with GymProxy.make("UnirosTestTiny-v0") as env:
+            assert env._closed is False
+            env.reset()
+        # After the with block, close() should have been called.
+        assert env._closed is True
+
+    def test_with_block_closes_on_exception(self):
+        env_ref = []
+        with pytest.raises(RuntimeError, match="boom"):
+            with GymProxy.make("UnirosTestTiny-v0") as env:
+                env_ref.append(env)
+                raise RuntimeError("boom")
+        # __exit__ ran close() on the way out; the exception still propagates.
+        assert env_ref[0]._closed is True
+
+    def test_with_block_propagates_exception(self):
+        # __exit__ must return None (falsy) so exceptions aren't swallowed.
+        sentinel = ValueError("propagate me")
+        with pytest.raises(ValueError) as excinfo:
+            with GymProxy.make("UnirosTestTiny-v0"):
+                raise sentinel
+        assert excinfo.value is sentinel
+
+
 # ---------------------------------------------------------------- Round 4
 
 

@@ -230,6 +230,15 @@ class GymProxy:
             self.process.terminate()
             self.process.join(timeout=1.0)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Always close, even on exception. close() is idempotent so a later
+        # __del__ won't double-tear-down the worker. Propagate the exception
+        # by returning None (truthy return would swallow it).
+        self.close()
+
     def __getattr__(self, name):
         # Send a 'get_attribute' command to the worker process along with the name of the attribute
         self.parent_conn.send(('get_attribute', name))
