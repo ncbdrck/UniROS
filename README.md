@@ -1,6 +1,11 @@
 
 # UniROS: ROS-Based Reinforcement Learning Across Simulated and Real-world Robotics
 
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Documentation Status](https://readthedocs.org/projects/uniros/badge/?version=latest)](https://uniros.readthedocs.io/en/latest/?badge=latest)
+
+📚 **Full documentation**: [uniros.readthedocs.io](https://uniros.readthedocs.io/)
+
 A comprehensive framework for reinforcement learning in robotics,
 which allows users to train their robots in both simulated and real-world environments concurrently.
 It simplifies the process of creating reinforcement learning environments for robots
