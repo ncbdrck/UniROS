@@ -32,7 +32,7 @@ The RosMarkerArray Class has the following methods,
 import rospy
 from visualization_msgs.msg import Marker, MarkerArray
 import numpy as np
-from typing import Union
+from typing import Any, List, Optional, Union
 
 
 class RosMarker:
@@ -45,9 +45,13 @@ class RosMarker:
     """
 
     def __init__(self, frame_id: str, ns: str, marker_type: int, marker_topic: str, marker_id: int = 0,
-                 action: int = Marker.ADD, pose: list = None, position: Union[list, np.ndarray] = None,
-                 orientation: Union[list, np.ndarray] = None, lifetime: float = 0.0,
-                 scale: list = None, color: list = None):
+                 action: int = Marker.ADD,
+                 pose: Optional[List[float]] = None,
+                 position: Optional[Union[List[float], np.ndarray]] = None,
+                 orientation: Optional[Union[List[float], np.ndarray]] = None,
+                 lifetime: float = 0.0,
+                 scale: Optional[List[float]] = None,
+                 color: Optional[List[float]] = None) -> None:
         """
         Initialize a RosMarker object.
 
@@ -144,7 +148,7 @@ class RosMarker:
         # Create a publisher for the marker
         self.publisher = rospy.Publisher(marker_topic, Marker, queue_size=10)
 
-    def set_frame_id(self, frame_id: str):
+    def set_frame_id(self, frame_id: str) -> None:
         """
         Set the frame ID of the marker.
 
@@ -155,7 +159,7 @@ class RosMarker:
         # Set the frame ID of the marker
         self.marker.header.frame_id = frame_id
 
-    def set_ns(self, ns: str):
+    def set_ns(self, ns: str) -> None:
         """
         Set the namespace of the marker.
 
@@ -166,7 +170,7 @@ class RosMarker:
         # Set the namespace of the marker
         self.marker.ns = ns
 
-    def set_id(self, marker_id: int):
+    def set_id(self, marker_id: int) -> None:
         """
         Set the ID of the marker.
 
@@ -177,7 +181,7 @@ class RosMarker:
         # Set the ID of the marker
         self.marker.id = marker_id
 
-    def set_type(self, marker_type: int):
+    def set_type(self, marker_type: int) -> None:
         """
         Set the type of the marker.
 
@@ -188,7 +192,7 @@ class RosMarker:
         # Set the type of the marker
         self.marker.type = marker_type
 
-    def set_action(self, action: int):
+    def set_action(self, action: int) -> None:
         """
         Set the action of the marker.
 
@@ -199,7 +203,7 @@ class RosMarker:
         # Set the action of the marker
         self.marker.action = action
 
-    def set_pose(self, pose: list):
+    def set_pose(self, pose: List[float]) -> None:
         """
         Set the pose of the marker.
 
@@ -216,7 +220,7 @@ class RosMarker:
         self.marker.pose.orientation.z = pose[5]
         self.marker.pose.orientation.w = pose[6]
 
-    def set_position(self, position: Union[list, np.ndarray]):
+    def set_position(self, position: Union[List[float], np.ndarray]) -> None:
         """
         Set the position of the marker.
 
@@ -233,7 +237,7 @@ class RosMarker:
         self.marker.pose.position.y = position[1]
         self.marker.pose.position.z = position[2]
 
-    def set_orientation(self, orientation: Union[list, np.ndarray]):
+    def set_orientation(self, orientation: Union[List[float], np.ndarray]) -> None:
         """
         Set the orientation of the marker.
 
@@ -251,7 +255,7 @@ class RosMarker:
         self.marker.pose.orientation.z = orientation[2]
         self.marker.pose.orientation.w = orientation[3]
 
-    def set_duration(self, duration: float):
+    def set_duration(self, duration: float) -> None:
         """
         Set the lifetime of the marker.
 
@@ -262,7 +266,7 @@ class RosMarker:
         # Set the lifetime of the marker
         self.marker.lifetime = rospy.Duration(duration)
 
-    def set_scale(self, scale: list):
+    def set_scale(self, scale: List[float]) -> None:
         """
         Set the scale of the marker.
 
@@ -275,7 +279,9 @@ class RosMarker:
         self.marker.scale.y = scale[1]
         self.marker.scale.z = scale[2]
 
-    def set_color(self, color: list = None, r: float = None, g: float = None, b: float = None, a: float = None):
+    def set_color(self, color: Optional[List[float]] = None,
+                  r: Optional[float] = None, g: Optional[float] = None,
+                  b: Optional[float] = None, a: Optional[float] = None) -> None:
         """
         Set the color of the marker.
 
@@ -304,7 +310,7 @@ class RosMarker:
         if a is not None:
             self.marker.color.a = a
 
-    def publish(self):
+    def publish(self) -> None:
         """
         Publish the marker.
         """
@@ -315,7 +321,7 @@ class RosMarker:
         # Publish the marker
         self.publisher.publish(self.marker)
 
-    def delete(self):
+    def delete(self) -> None:
         """
         Delete the marker.
         """
@@ -326,8 +332,11 @@ class RosMarker:
         # Publish the updated marker
         self.publish()
 
-    def update(self, position: Union[list, np.ndarray] = None, orientation: Union[list, np.ndarray] = None,
-               r: float = None, g: float = None, b: float = None, a: float = None, duration: float = None):
+    def update(self, position: Optional[Union[List[float], np.ndarray]] = None,
+               orientation: Optional[Union[List[float], np.ndarray]] = None,
+               r: Optional[float] = None, g: Optional[float] = None,
+               b: Optional[float] = None, a: Optional[float] = None,
+               duration: Optional[float] = None) -> None:
         """
         Update the marker.
 
@@ -391,7 +400,7 @@ class RosMarkerArray:
 
     """
 
-    def __init__(self, marker_topic: str):
+    def __init__(self, marker_topic: str) -> None:
         """
         Initialize the RosMarkerArray.
 
@@ -406,9 +415,13 @@ class RosMarkerArray:
         self.publisher = rospy.Publisher(marker_topic, MarkerArray, queue_size=10)
 
     def add_marker(self, frame_id: str, ns: str, marker_type: int, marker_topic: str = "", marker_id: int = 0,
-                   action: int = Marker.ADD, pose: list = None, position: Union[list, np.ndarray] = None,
-                   orientation: Union[list, np.ndarray] = None, lifetime: float = 0.0,
-                   scale: list = None, color: list = None):
+                   action: int = Marker.ADD,
+                   pose: Optional[List[float]] = None,
+                   position: Optional[Union[List[float], np.ndarray]] = None,
+                   orientation: Optional[Union[List[float], np.ndarray]] = None,
+                   lifetime: float = 0.0,
+                   scale: Optional[List[float]] = None,
+                   color: Optional[List[float]] = None) -> None:
         """
         Add a new marker to the array.
 
@@ -444,7 +457,7 @@ class RosMarkerArray:
         # Add the new marker to the list
         self.markers.append(marker)
 
-    def remove_marker(self, marker_id: int):
+    def remove_marker(self, marker_id: int) -> None:
         """
         Remove a marker from the array.
 
@@ -463,9 +476,15 @@ class RosMarkerArray:
         if marker_index is not None:
             del self.markers[marker_index]
 
-    def update_markers(self, frame_id: str = None, ns: str = None, marker_type: int = None, action: int = None,
-                       position: list = None, orientation: list = None, scale: list = None, color: list = None,
-                       lifetime: float = None):
+    def update_markers(self, frame_id: Optional[str] = None,
+                       ns: Optional[str] = None,
+                       marker_type: Optional[int] = None,
+                       action: Optional[int] = None,
+                       position: Optional[List[float]] = None,
+                       orientation: Optional[List[float]] = None,
+                       scale: Optional[List[float]] = None,
+                       color: Optional[List[float]] = None,
+                       lifetime: Optional[float] = None) -> None:
         """
         Update all markers in the array.
 
@@ -520,7 +539,7 @@ class RosMarkerArray:
             if lifetime is not None:
                 marker.set_duration(lifetime)
 
-    def publish(self):
+    def publish(self) -> None:
         """
         Publish all markers in the array.
         """
@@ -539,7 +558,7 @@ class RosMarkerArray:
         # Publish the MarkerArray
         self.publisher.publish(marker_array)
 
-    def delete_all_markers(self):
+    def delete_all_markers(self) -> None:
         """
         Delete all markers in the array.
         """
@@ -552,7 +571,7 @@ class RosMarkerArray:
         # Publish the updated markers
         self.publish()
 
-    def remove_all_markers(self):
+    def remove_all_markers(self) -> None:
         """
         Remove all markers from the array.
         """
@@ -560,7 +579,7 @@ class RosMarkerArray:
         # Clear the list of markers
         self.markers.clear()
 
-    def get_marker_by_id(self, marker_id: int):
+    def get_marker_by_id(self, marker_id: int) -> Optional[Marker]:
         """
         Get a marker by its ID.
 
@@ -579,7 +598,7 @@ class RosMarkerArray:
         # Return None if no such marker was found
         return None
 
-    def get_markers_by_property(self, property_name: str, property_value):
+    def get_markers_by_property(self, property_name: str, property_value: Any) -> List[Marker]:
         """
         Get all markers with a specific property value.
 
