@@ -11,9 +11,9 @@ Platform lifecycle
 ------------------
 
 * **ROS Noetic reached end-of-life on 2025-05-31.** Ubuntu 20.04
-  goes EOL in April 2025 (regular support) and 2030 (extended).
-  No new upstream Noetic packages will be released; security
-  updates only via Ubuntu Pro.
+  reached end of standard support on 31 May 2025 (Ubuntu Pro
+  extends to 2030). No new upstream Noetic packages will be
+  released; security updates only via Ubuntu Pro.
 * **Gazebo Classic reached EOL in 2025.** Modern Gazebo (Harmonic,
   Ionic) and ROS 2 are the forward path. A future port of this
   framework to ROS 2 / modern Gazebo is mentioned in the paper as

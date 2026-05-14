@@ -96,7 +96,7 @@ If this ecosystem is useful in your work, please cite the paper:
 
    @Article{s25185679,
      AUTHOR  = {Kapukotuwa, Jayasekara and Lee, Brian and Devine, Declan and Qiao, Yuansong},
-     TITLE   = {UniROS: A Unified Framework for ROS-Based Reinforcement Learning Across Simulated and Real-World Robotics},
+     TITLE   = {UniROS: ROS-Based Reinforcement Learning Across Simulated and Real-World Robotics},
      JOURNAL = {Sensors},
      VOLUME  = {25},
      YEAR    = {2025},

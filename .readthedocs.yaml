@@ -32,6 +32,12 @@ submodules:
 
 sphinx:
   configuration: docs/conf.py
+  # The strict warnings-as-errors gate runs in .github/workflows/docs.yml
+  # (`sphinx-build -W --keep-going`). RTD intentionally stays lenient so
+  # the public docs site keeps publishing even if a Sphinx version or
+  # environment difference on RTD's builder surfaces a fresh warning
+  # that the GitHub CI didn't catch. If we ever want symmetric strictness,
+  # set this to true after confirming RTD's builder and GitHub CI agree.
   fail_on_warning: false
 
 python:

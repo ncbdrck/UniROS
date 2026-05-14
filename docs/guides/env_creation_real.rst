@@ -129,7 +129,8 @@ spaces. The recommended workflow:
       model = SAC.load_trained_model(
           save_path + "trained_model_name",
           env=real_env,
-          ...
+          model_pkg="rl_training_validation",
+          config_filename="rx200_reacher_sac.yaml",
       )
 
 See :doc:`using_trained_models` for the full pattern, and
