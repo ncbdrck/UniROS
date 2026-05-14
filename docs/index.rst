@@ -87,6 +87,21 @@ the applications as ready-made examples.
    guides/limitations
 
 
+About these docs
+----------------
+
+This documentation was drafted in collaboration with two AI
+assistants — Anthropic's Claude (for writing and structure) and
+OpenAI's Codex CLI (for review passes) — working from the UniROS
+codebase, the *Sensors* paper, and design decisions made by the
+author. Each change was reviewed before being committed.
+
+That said, AI-assisted docs can still contain hallucinated APIs,
+stale examples, or subtle factual errors. **If you find an
+inaccuracy, please open an issue at**
+`github.com/ncbdrck/UniROS/issues <https://github.com/ncbdrck/UniROS/issues>`_.
+
+
 Citation
 --------
 
