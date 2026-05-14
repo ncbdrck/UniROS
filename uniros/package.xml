@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>uniros</name>
-  <version>0.0.1</version>
+  <version>0.2.0</version>
   <description>ROS-Based Reinforcement Learning Across Simulated and Real-world Robotics</description>
 
   <author email="j.kapukotuwa@research.ait.ie">Jayasekara Kapukotuwa</author>

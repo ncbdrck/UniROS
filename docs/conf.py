@@ -18,8 +18,8 @@ from datetime import date
 project = "UniROS ecosystem"
 author = "Jayasekara Kapukotuwa"
 copyright = f"{date.today().year}, {author}"
-release = "1.0.0"
-version = "1.0"
+release = "0.2.0"
+version = "0.2"
 
 # ---------------------------------------------------------------- Source path
 # Add the framework packages so autodoc can import them. Paths are
