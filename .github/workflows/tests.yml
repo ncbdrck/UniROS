@@ -1,0 +1,44 @@
+name: tests
+
+on:
+  push:
+    branches: [main, master, gymnasium]
+  pull_request:
+    branches: [main, master, gymnasium]
+  workflow_dispatch: {}
+
+jobs:
+  pytest:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.8 = ROS Noetic's bundled Python (the supported runtime).
+        # 3.10 = forward-compat check.
+        # 3.12 is blocked on migrating setup.py from distutils to
+        # setuptools (distutils was removed from 3.12 stdlib). Re-enable
+        # once that migration lands.
+        python-version: ["3.8", "3.10"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package + test deps
+        working-directory: uniros
+        run: |
+          python -m pip install --upgrade pip
+          # catkin_pkg is needed because setup.py uses generate_distutils_setup.
+          # We do NOT install ROS itself; tests stub the rospy ecosystem in conftest.py.
+          pip install catkin_pkg pytest
+          pip install gymnasium gymnasium_robotics numpy
+          # Install uniros as an editable package so `import uniros` resolves
+          # to the working tree we just checked out.
+          pip install -e .
+
+      - name: Run pytest
+        working-directory: uniros
+        run: pytest tests/ -v
