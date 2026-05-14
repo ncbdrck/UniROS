@@ -43,4 +43,17 @@ jobs:
 
       - name: Run pytest
         working-directory: uniros
-        run: pytest tests/ -v
+        run: |
+          set -o pipefail
+          pytest tests/ -v 2>&1 | tee pytest.log
+
+      - name: Surface pytest failures
+        if: failure()
+        working-directory: uniros
+        run: |
+          echo "===== last 200 lines of pytest.log ====="
+          tail -200 pytest.log || echo "(no log)"
+          echo "===== FAILED / ERROR lines as annotations ====="
+          grep -E "^(FAILED|ERROR|E\s+|>\s+)" pytest.log | while IFS= read -r line; do
+            echo "::error::${line}"
+          done
