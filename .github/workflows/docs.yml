@@ -23,8 +23,8 @@ jobs:
 
       # The framework + application packages live in separate repos.
       # Clone each at the SAME branch ref this workflow is running on
-      # (tier2-2026 → tier2-2026, gymnasium → gymnasium, etc.) so the
-      # docs render the matching versions of every package.
+      # (gymnasium → gymnasium, feature branches → matching branch,
+      # etc.) so the docs render the matching versions of every package.
       - name: Check out multiros
         uses: actions/checkout@v4
         with:
@@ -49,7 +49,7 @@ jobs:
       # rl_environments and rl_training_validation use `main` as their
       # default branch, NOT `gymnasium` (that's a framework-side convention).
       # So when UniROS is on gymnasium, fall back to `main` for these two.
-      # Other branches (tier2-2026, feature branches) still try to match.
+      # Other branches (feature / integration branches) still try to match.
       - name: Check out rl_environments
         uses: actions/checkout@v4
         with:

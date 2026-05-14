@@ -18,24 +18,27 @@ Repositories
    * - https://github.com/ncbdrck/UniROS
      - Canonical home for the gym-proxy class and shared ROS
        utilities. Bug fixes here flow to multiros and realros via
-       re-exports.
+       re-exports. Also hosts this documentation site.
    * - https://github.com/ncbdrck/multiros
      - Gazebo simulation layer.
    * - https://github.com/ncbdrck/realros
      - Real-hardware layer.
    * - https://github.com/ncbdrck/sb3_ros_support
      - Stable Baselines 3 wrappers.
-   * - https://github.com/ncbdrck/MultiROS_Real
-     - This documentation site, plus internal review notes.
+   * - https://github.com/ncbdrck/rl_environments
+     - Ready-made gymnasium environments (RX200, NED2, ...).
+   * - https://github.com/ncbdrck/rl_training_validation
+     - Training scripts that exercise the rl_environments envs.
 
 
 Development setup
 -----------------
 
 Set up a Noetic catkin workspace as in :doc:`install`, then check
-out the development branches you want to work on. Most active work
-happens on a ``cleanup-2026`` (or successor) branch before merging
-to the public default.
+out the development branches you want to work on. Active work
+usually happens on a feature or integration branch before merging
+to the repo's default branch (``gymnasium`` for the four framework
+repos, ``main`` for the application repos).
 
 Run the test suites before committing — see :doc:`testing`.
 

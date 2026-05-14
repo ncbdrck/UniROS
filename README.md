@@ -155,20 +155,14 @@ Update `MULTIROS_DIR` and `REALROS_DIR` to match where these repositories live i
 
 ## Documentation
 
-Full documentation for the ecosystem — installation, ready-made
+The full ecosystem documentation — installation, ready-made
 environments, environment creation (sim and real), training with
 any gymnasium-compatible framework, joint sim+real training, and
-the API reference — lives in the [`docs/`](docs/) directory of
-this repository and is built with Sphinx.
+the API reference — lives at
+[uniros.readthedocs.io](https://uniros.readthedocs.io/).
 
-To preview locally:
-
-```bash
-cd ~/catkin_ws/src/UniROS
-pip install -r docs/requirements.txt
-sphinx-build -b html docs docs/_build/html
-xdg-open docs/_build/html/index.html
-```
+(Contributors who want to build the docs locally: see
+[docs/guides/contributing](https://uniros.readthedocs.io/en/latest/guides/contributing.html#development-setup).)
 
 ## Cite
 
