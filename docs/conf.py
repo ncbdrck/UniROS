@@ -136,7 +136,7 @@ autoclass_content = "both"
 # Mock them so autodoc can introspect docstrings without crashing on
 # unresolved imports.
 autodoc_mock_imports = [
-    "rospy", "rosparam", "rospkg", "xacro",
+    "rospy", "rosparam", "rospkg", "rostopic", "xacro",
     "rospy.service",
     "visualization_msgs", "geometry_msgs", "std_msgs",
     "sensor_msgs", "controller_manager_msgs",
