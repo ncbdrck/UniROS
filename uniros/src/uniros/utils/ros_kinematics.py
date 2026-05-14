@@ -30,6 +30,8 @@ from kdl_parser_py.urdf import treeFromParam
 from trac_ik_python import trac_ik
 import rospy
 
+from typing import List, Optional, Tuple, Union
+
 
 class Kinematics_pyrobot(object):
     """
@@ -37,7 +39,7 @@ class Kinematics_pyrobot(object):
     link: https://github.com/facebookresearch/pyrobot/blob/b334b60842271d9d8f4ed7a97bc4e5efe8bb72d6/pyrobot_bridge/nodes/kinematics.py
     """
 
-    def __init__(self, robot_description_parm: str, base_link: str, end_link: str, debug=False):
+    def __init__(self, robot_description_parm: str, base_link: str, end_link: str, debug: bool = False) -> None:
         """
         Initialize the Kinematics class.
 
@@ -130,7 +132,10 @@ class Kinematics_pyrobot(object):
         assert num_joints == len(joint_names)
         return copy.deepcopy(joint_names)
 
-    def calculate_ik(self, target_pose, tolerance, init_joint_positions):
+    def calculate_ik(self, target_pose: Union[List[float], np.ndarray],
+                     tolerance: Union[List[float], np.ndarray],
+                     init_joint_positions: Union[List[float], np.ndarray],
+                     ) -> Tuple[bool, Optional[np.ndarray]]:
         """
         Calculate the inverse kinematics for a given pose.
 
@@ -214,7 +219,8 @@ class Kinematics_pyrobot(object):
             kdl_array[idx] = joint_values[idx]
         return kdl_array
 
-    def calculate_fk(self, joint_positions, des_frame, euler=True):
+    def calculate_fk(self, joint_positions: Union[List[float], np.ndarray],
+                     des_frame: str, euler: bool = True) -> Tuple[bool, Optional[np.ndarray]]:
         """
         Given joint angles, compute the pose of desired_frame with respect
         to the base frame. The desired frame must be in self.arm_link_names.
@@ -275,7 +281,7 @@ class Kinematics_pykdl(object):
     https://github.com/ncbdrck/hrl-kdl
     """
 
-    def __init__(self, robot_description_parm: str, base_link: str, end_link: str, debug=False):
+    def __init__(self, robot_description_parm: str, base_link: str, end_link: str, debug: bool = False) -> None:
         """
         Initialize the Kinematics class.
 
@@ -349,7 +355,10 @@ class Kinematics_pykdl(object):
         R[:3, :3] = rot
         return tf.transformations.quaternion_from_matrix(R)
 
-    def calculate_fk(self, joint_positions, end_link=None, base_link=None, euler=True):
+    def calculate_fk(self, joint_positions: Union[List[float], np.ndarray],
+                     end_link: Optional[str] = None,
+                     base_link: Optional[str] = None,
+                     euler: bool = True) -> Tuple[bool, Optional[np.ndarray]]:
         """
         Given joint angles, compute the pose of desired_frame with respect
         to the base frame. The desired frame must be in self.arm_link_names.
@@ -386,7 +395,9 @@ class Kinematics_pykdl(object):
 
         return True, position, rotations
 
-    def calculate_ik(self, target_pose, init_joint_positions=None):
+    def calculate_ik(self, target_pose: Union[List[float], np.ndarray],
+                     init_joint_positions: Optional[Union[List[float], np.ndarray]] = None,
+                     ) -> Tuple[bool, Optional[np.ndarray]]:
         """
         Calculate the inverse kinematics for a given pose.
 
