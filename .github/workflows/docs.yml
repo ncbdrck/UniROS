@@ -72,35 +72,9 @@ jobs:
 
       - name: Build HTML docs (warnings-as-errors)
         working-directory: UniROS
-        run: |
-          mkdir -p docs/_build
-          set -o pipefail
-          sphinx-build -W --keep-going -b html docs docs/_build/html 2>&1 | tee docs/_build/sphinx.log
-
-      - name: Surface sphinx warnings as annotations
-        if: failure()
-        working-directory: UniROS
-        run: |
-          echo "===== sphinx.log ====="
-          cat docs/_build/sphinx.log || echo "(no log file)"
-          echo "===== warning lines ====="
-          grep -nE "(WARNING|ERROR)" docs/_build/sphinx.log || echo "(no warnings matched)"
-          # Re-emit as GitHub annotations so they surface via the check-run API.
-          while IFS= read -r line; do
-            echo "::error::${line}"
-          done < <(grep -E "(WARNING|ERROR)" docs/_build/sphinx.log || true)
-
-      - name: Upload sphinx build log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: sphinx-log
-          path: UniROS/docs/_build/sphinx.log
-          retention-days: 14
-          if-no-files-found: warn
+        run: sphinx-build -W --keep-going -b html docs docs/_build/html
 
       - name: Upload built docs as artifact
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: html-docs
