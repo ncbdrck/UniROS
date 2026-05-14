@@ -147,9 +147,12 @@ See :doc:`/api/sb3_ros_support` for the full algorithm list, and
 Option 3 — Any other gymnasium-compatible framework
 ---------------------------------------------------
 
-CleanRL, Tianshou, RLlib, Tensorforce, or a hand-written training
-loop all work — they each accept a ``gym.Env`` (or
-``gymnasium.Env``) and that's what ``uniros.make`` produces.
+CleanRL, Tianshou, RLlib, Tensorforce, and hand-written training
+loops should all be adaptable because they consume the Gymnasium
+API and that's what ``uniros.make`` produces. SB3 via
+``sb3_ros_support`` is the tested path; the snippets below are
+integration sketches — they haven't been exercised end-to-end on
+this codebase.
 
 **CleanRL**
 
