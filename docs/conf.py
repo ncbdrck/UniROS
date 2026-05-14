@@ -68,12 +68,12 @@ _PACKAGE_CANDIDATES = {
     ],
     "rl_environments": [
         "../rl_environments/src",                # RTD clone
-        "../../../rl_ws/src/rl_environments/src",  # local rl_ws layout
+        "../../../../rl_ws/src/rl_environments/src",  # local rl_ws layout (sibling of catkin_ws)
         "../../rl_environments/src",             # alt local layout
     ],
     "rl_training_validation": [
         "../rl_training_validation/src",         # RTD clone
-        "../../../rl_ws/src/rl_training_validation/src",  # local rl_ws layout
+        "../../../../rl_ws/src/rl_training_validation/src",  # local rl_ws layout
         "../../rl_training_validation/src",      # alt local layout
     ],
 }
@@ -147,6 +147,10 @@ autodoc_mock_imports = [
     "PyKDL", "kdl_parser_py", "urdf_parser_py",
     "pykdl_utils", "hrl_geom", "trac_ik_python",
     "torch", "stable_baselines3",
+    # SB3 + TensorBoard transitively pull tensorflow on some installs;
+    # mock both so docs builds on a developer machine don't print CUDA /
+    # TensorRT warnings while reading the sb3_ros_support API.
+    "tensorflow", "tensorboard",
     # rl_environments / rl_training_validation extras
     "cv2", "cv_bridge", "image_transport",
     "interbotix_xs_modules", "interbotix_xs_msgs",

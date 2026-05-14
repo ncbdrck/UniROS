@@ -49,9 +49,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r docs/requirements.txt
 
-      - name: Build HTML docs
+      - name: Build HTML docs (warnings-as-errors)
         working-directory: UniROS
-        run: sphinx-build -b html docs docs/_build/html
+        run: sphinx-build -W --keep-going -b html docs docs/_build/html
 
       - name: Upload built docs as artifact
         uses: actions/upload-artifact@v4

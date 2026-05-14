@@ -1,22 +1,29 @@
 #! /usr/bin/env python
 
 """
-This script is to specify all the functions related to the handling of ROS Controllers.
-It has the following functions,
-    01. load_ros_controller: Load a ROS controller.
-    02. load_controller_list: Load a list of ROS controllers.
-    03. list_loaded_controllers: List all loaded ROS controllers.
-    04. unload_ros_controller: Unload a ROS controller.
-    05. unload_controller_list: Unload a list of ROS controllers.
-    06. switch_controllers: Switch between two sets of ROS controllers.
-    07. start_controllers: Start a list of ROS controllers.
-    08. stop_controllers: Stop a list of ROS controllers.
-    09. reset_controllers: "reset" a list of ROS controllers by stopping and then starting them again.
-    10. spawn_controllers: Spawn a list of ROS controllers by loading and then starting them.
-    11. unspawn_controllers: Unspawn a list of ROS controllers by stopping and then unloading them.
+Functions for handling ROS controllers via the ``controller_manager``
+services.
 
-    ROS Doc:
-    http://docs.ros.org/en/noetic/api/controller_manager_msgs/html/index-msg.html
+Functions provided:
+
+- ``load_ros_controller`` — load a ROS controller.
+- ``load_controller_list`` — load a list of controllers.
+- ``list_loaded_controllers`` — list all loaded controllers.
+- ``unload_ros_controller`` — unload a controller.
+- ``unload_controller_list`` — unload a list of controllers.
+- ``switch_controllers`` — switch between two sets of controllers.
+- ``start_controllers`` — start a list of controllers.
+- ``stop_controllers`` — stop a list of controllers.
+- ``reset_controllers`` — stop then re-start a list of controllers.
+- ``spawn_controllers`` — load then start a list of controllers.
+- ``unspawn_controllers`` — stop then unload a list of controllers.
+
+Every helper wraps its underlying service call with a 30-second
+``rospy.wait_for_service`` timeout so a hung ``controller_manager``
+surfaces as a logged failure rather than an indefinite hang.
+
+ROS service reference:
+http://docs.ros.org/en/noetic/api/controller_manager_msgs/html/index-msg.html
 """
 
 import rospy

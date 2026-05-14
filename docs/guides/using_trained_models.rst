@@ -30,8 +30,8 @@ same YAML config the training script used:
    model = SAC.load_trained_model(
        "/models/sac/trained_model_name",
        env=env,
-       model_pkg="rl_environments",
-       config_filename="sac.yaml",
+       model_pkg="rl_training_validation",
+       config_filename="rx200_reacher_sac.yaml",
    )
 
    # Run validation episodes
@@ -77,8 +77,8 @@ match.
    model = SAC.load_trained_model(
        "/models/sac/trained_in_sim",
        env=env,
-       model_pkg="rl_environments",
-       config_filename="sac.yaml",
+       model_pkg="rl_training_validation",
+       config_filename="rx200_reacher_sac.yaml",
    )
 
    # Slow start — confirm the first action is sensible before

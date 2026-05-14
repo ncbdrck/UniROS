@@ -5,17 +5,28 @@ The ecosystem targets **ROS Noetic** on **Ubuntu 20.04** with
 **Python 3.8**, **Gazebo Classic 11**, **Gymnasium 0.29.1**, and
 **Stable Baselines 3 2.x**.
 
+.. note::
+
+   **ROS Noetic and Gazebo Classic are end-of-life as of 2025.**
+   This framework is a research artifact targeting that pinned
+   environment for reproducibility with the
+   `published paper <https://www.mdpi.com/1424-8220/25/18/5679>`_.
+   New production work should consider a ROS 2 / modern Gazebo
+   migration — that's out of scope for the current codebase but
+   tracked as future work.
+
 The fastest installation path is to use the bootstrap script
-shipped with ``rl_environments`` — it installs ROS, the four
-framework packages, and the robot drivers in one go. The manual
-path below is for users who want to understand every step or
-who already have parts of the stack installed.
+shipped with ``rl_environments`` — it installs ROS, the framework
+core, and the robot drivers in one go. The manual path below is
+for users who want to understand every step or who already have
+parts of the stack installed.
 
 
-Option A — bootstrap script (recommended)
------------------------------------------
+Option A — bootstrap script (recommended for a fresh machine)
+-------------------------------------------------------------
 
-If you don't yet have a catkin workspace or want the everything-bundle:
+If you don't yet have a catkin workspace, the bootstrap script in
+``rl_environments`` installs the heavy parts in one go:
 
 .. code-block:: bash
 
@@ -28,9 +39,39 @@ If you don't yet have a catkin workspace or want the everything-bundle:
    # or
    ./install_ros_rl.sh -n         # non-interactive
 
-The script installs ROS Noetic (if missing), the four framework
-packages on the ``gymnasium`` branch, and the RX200 / Ned2 / UR5
-robot drivers. Skip to :doc:`quickstart` once it finishes.
+What the script installs:
+
+* ROS Noetic (if missing)
+* UniROS (recursively, pulling MultiROS + RealROS as submodules)
+* The robot drivers — RX200 (Interbotix), Ned2 (Niryo), UR5
+  (Universal Robots)
+* ``hrl-kdl`` (Noetic-compatible pykdl_utils + hrl_geom)
+
+What the script does **not** install:
+
+* ``sb3_ros_support`` — the SB3 wrapper. Needed if you want to
+  train with the convenience layer or use ``rl_training_validation``.
+* ``rl_environments`` itself into the catkin workspace — the
+  script clones it, but you'll typically want it sitting alongside
+  the other packages.
+* ``rl_training_validation`` — the working training scripts.
+
+After the script finishes, run the following to pick up the rest:
+
+.. code-block:: bash
+
+   cd ~/catkin_ws/src
+   git clone -b gymnasium https://github.com/ncbdrck/sb3_ros_support.git
+   git clone https://github.com/ncbdrck/rl_training_validation.git
+   # And, if not already there:
+   git clone https://github.com/ncbdrck/rl_environments.git
+
+   cd ~/catkin_ws
+   rosdep install --from-paths src --ignore-src -r -y
+   catkin build
+   source devel/setup.bash
+
+Then jump to :doc:`quickstart`.
 
 
 Option B — manual installation
@@ -130,6 +171,25 @@ recursive clone gives you all three packages:
 If you already have MultiROS or RealROS cloned standalone, skip
 ``--recurse-submodules`` and use the existing clones; just be sure
 they're on the ``gymnasium`` branch.
+
+.. admonition:: Workspace layouts
+   :class: note
+
+   Two layouts are supported, both work:
+
+   **A. Submodule layout (recommended for new users / RTD)** —
+   one recursive clone of UniROS pulls MultiROS and RealROS in as
+   submodules under ``UniROS/multiros/`` and ``UniROS/realros/``.
+
+   **B. Sibling layout (common for active developers)** — clone
+   MultiROS and RealROS as standalone packages alongside UniROS in
+   the catkin ``src/`` directory. This is what an active developer
+   often ends up with: catkin can't host two packages with the
+   same ``<name>``, so once you start editing MultiROS or RealROS
+   directly it's easier to have them as siblings of UniROS rather
+   than as nested submodules.
+
+   The framework and the docs work the same in both layouts.
 
 Clone the SB3 support package (separate repo, not a submodule):
 

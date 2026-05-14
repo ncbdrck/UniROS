@@ -1,9 +1,16 @@
 Ecosystem overview
 ==================
 
-The framework is intentionally split into four packages. Each
-solves a clearly-bounded problem; users compose them depending on
+The **core framework** is intentionally split into four packages
+— UniROS, MultiROS, RealROS, and ``sb3_ros_support``. Each solves
+a clearly-bounded problem; users compose them depending on
 whether they're training in simulation, on hardware, or both.
+
+Two additional **application** packages ship pre-built envs and
+working training scripts on top: ``rl_environments`` (the gym envs
+themselves) and ``rl_training_validation`` (the training scripts
+that exercise them). They're optional — the framework runs without
+them — but they're the easiest path to a first running example.
 
 Architecture at a glance
 ------------------------

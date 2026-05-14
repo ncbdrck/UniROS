@@ -77,6 +77,54 @@ From a training-script perspective both look like a single
   ``compute_reward``).
 
 
+Process topology
+----------------
+
+The thing that makes joint sim+real training operationally non-
+trivial is that you've got **two ROS masters running at once**:
+one for the Gazebo simulator and one for the real robot's driver.
+The framework keeps these straight via separate roscores and
+distinct ``ROS_MASTER_URI`` values:
+
+.. code-block:: text
+
+    +-----------------------+         +-------------------------------+
+    | training script       |         | real robot driver             |
+    | (your Python process) |         | (its own terminal, e.g.       |
+    |                       |         |  ``roslaunch rx200 ...``)     |
+    +-----------------------+         +-------------------------------+
+                |                                  |
+                |                                  |
+                v                                  v
+     +-------------------+              +-------------------------+
+     | sim roscore       |              | real-robot roscore      |
+     | + Gazebo          |              | (started by the driver) |
+     | spawned by        |              |                         |
+     | launch_gazebo()   |              |                         |
+     |                   |              |                         |
+     | ROS_MASTER_URI =  |              | ROS_MASTER_URI =        |
+     |  http://localhost |              |  http://localhost:11311 |
+     |   :<sim_port>     |              |  (or remote IP for      |
+     |                   |              |   multi-device mode)    |
+     +-------------------+              +-------------------------+
+
+What you need to do operationally:
+
+* **Terminal 1**: launch the real robot's ROS driver. By default
+  this uses ``ROS_MASTER_URI=http://localhost:11311``.
+* **Terminal 2**: run the training script. It calls
+  ``launch_gazebo()`` which picks free ports for the simulator's
+  roscore + Gazebo, separate from 11311.
+* The sim env (``RX200ReacherSim-v0``) connects to the
+  framework-spawned simulator roscore. The real env
+  (``RX200ReacherReal-v0``) connects to the driver's roscore on
+  11311. UniROS runs each env in its own worker process, so
+  there's no ``ROS_MASTER_URI`` cross-contamination.
+* For **remote** robots (driver running on a different machine):
+  use RealROS's multi-device mode. See
+  :func:`realros.utils.ros_common.change_ros_master_multi_device`.
+
+
 Minimal example — TD3 + sim + real
 ----------------------------------
 
@@ -111,13 +159,16 @@ both ``RX200ReacherSim-v0`` (Gazebo) and ``RX200ReacherReal-v0``
            ],
        )
 
+       # YAML config lives in rl_training_validation/config/. Use
+       # multi_task_td3.yaml for joint sim+real (covers both envs).
+       pkg_path = "rl_training_validation"
        model = TD3(
            env,
            save_model_path="/models/td3_sim_real/",
            log_path="/logs/td3_sim_real/",
-           model_pkg_path="rl_environments",
-           config_file_pkg="rl_environments",
-           config_filename="td3.yaml",
+           model_pkg_path=pkg_path,
+           config_file_pkg=pkg_path,
+           config_filename="multi_task_td3.yaml",
        )
 
        model.train()
@@ -146,13 +197,14 @@ For HER you need :class:`MultiTaskGoalEnv` so the wrapper routes
        ],
    )
 
+   pkg_path = "rl_training_validation"
    model = TD3_GOAL(
        env,
        save_model_path="/models/td3_her_sim_real/",
        log_path="/logs/td3_her_sim_real/",
-       model_pkg_path="rl_environments",
-       config_file_pkg="rl_environments",
-       config_filename="td3_goal.yaml",
+       model_pkg_path=pkg_path,
+       config_file_pkg=pkg_path,
+       config_filename="multi_task_td3_goal.yaml",
    )
 
    model.train()

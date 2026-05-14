@@ -2,15 +2,26 @@ Training a model
 ================
 
 The environments produced by this framework are **standard
-gymnasium environments**. Any reinforcement-learning library that
-speaks the gymnasium API — Stable Baselines 3, CleanRL, Tianshou,
-RLlib, Tensorforce, or your own training loop — works without
-modification.
+gymnasium environments** that expose the usual
+``reset`` / ``step`` / ``action_space`` / ``observation_space``
+surface. Any RL library that consumes those should work.
+Verification status:
+
+* **Tested**: Stable Baselines 3 via ``sb3_ros_support`` (the
+  primary path used in the paper experiments and in
+  ``rl_training_validation``).
+* **Likely works**: plain Stable Baselines 3 without the support
+  wrapper; hand-written training loops.
+* **Unverified but expected to work**: CleanRL, Tianshou, RLlib,
+  Tensorforce. They each inspect a few env attributes (``spec``,
+  ``metadata``, ``unwrapped``, vector-env assumptions) that the
+  proxy forwards correctly via ``__getattr__``, but the full
+  matrix hasn't been exercised end-to-end.
 
 ``uniros.make()`` returns a proxy that behaves like ``gym.Env``
 but runs the underlying env in a worker process. That's the only
-framework-specific detail; everything downstream is vanilla
-gymnasium.
+framework-specific detail; everything downstream is gymnasium-
+shaped.
 
 This page shows three increasingly involved options:
 
@@ -94,7 +105,7 @@ edit, not a code rewrite), :doc:`/api/sb3_ros_support` adds:
    import uniros as gym
    import rl_environments
 
-   from sb3_ros_support.sac import SAC
+   from sb3_ros_support.td3 import TD3
 
 
    if __name__ == "__main__":
@@ -104,13 +115,16 @@ edit, not a code rewrite), :doc:`/api/sb3_ros_support` adds:
        env = gym.make("RX200ReacherSim-v0")
        env.reset()
 
-       model = SAC(
+       # YAML config lives inside the rl_training_validation package's
+       # ``config/`` directory. Replace the filename for SAC, PPO, etc.
+       pkg_path = "rl_training_validation"
+       model = TD3(
            env,
-           save_model_path="/models/sac/",
-           log_path="/logs/sac/",
-           model_pkg_path="rl_environments",
-           config_file_pkg="rl_environments",
-           config_filename="sac.yaml",
+           save_model_path="/models/td3/",
+           log_path="/logs/td3/",
+           model_pkg_path=pkg_path,
+           config_file_pkg=pkg_path,
+           config_filename="rx200_reacher_td3.yaml",
        )
 
        model.train()
@@ -213,7 +227,14 @@ Configuration via YAML (sb3_ros_support)
 ----------------------------------------
 
 When using ``sb3_ros_support``, hyperparameters live in a YAML file
-under ``rl_environments/config/`` or any ROS package you control.
+under any ROS package you control. The working examples ship under
+``rl_training_validation/config/``:
+
+* ``rx200_reacher_sac.yaml`` / ``rx200_reacher_sac_goal.yaml``
+* ``rx200_reacher_td3.yaml`` / ``rx200_reacher_td3_goal.yaml``
+* ``rx200_push_td3.yaml`` / ``rx200_push_td3_goal.yaml``
+* ``multi_task_td3.yaml`` / ``multi_task_td3_goal.yaml``
+
 A typical file:
 
 .. code-block:: yaml

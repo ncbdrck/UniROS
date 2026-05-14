@@ -19,47 +19,41 @@ If any package fails to import, make sure the workspace was built
 (``catkin build``) and sourced (``source devel/setup.bash``).
 
 
-Launch a roscore + Gazebo
--------------------------
+A complete first script
+-----------------------
 
-The framework can manage these for you. A bare-minimum script:
-
-.. code-block:: python
-
-   from multiros.utils import gazebo_core
-
-   # Picks free ports automatically, spawns roscore + Gazebo as
-   # detached xterm processes, sets ROS_MASTER_URI / GAZEBO_MASTER_URI
-   # for this Python process so subsequent gym.make() calls talk to
-   # the right master.
-   ros_port, gazebo_port, gazebo_proc = gazebo_core.launch_gazebo(
-       launch_roscore=True,
-       paused=False,
-       gui=True,
-   )
-
-
-Run a single env
-----------------
-
-Once Gazebo is up, register and step a gym env:
+Save the following as ``rx200_quickstart.py`` and run it. It
+launches a roscore + Gazebo, registers the pre-built RX200 envs,
+makes a reach env, and steps it 100 times.
 
 .. code-block:: python
 
+   #!/usr/bin/env python3
    import rospy
-   import uniros as gym                                # process-per-env proxy
-   from rl_environments.rx200.sim.task_envs.reach.rx200_reach_sim  # noqa: F401
+   from multiros.utils import gazebo_core
+   import uniros as gym               # process-per-env proxy
+   import rl_environments              # registers the gymnasium env IDs
 
-   rospy.init_node("rx200_quickstart")
+   if __name__ == "__main__":
+       # Pick free ports, spawn roscore + Gazebo as detached xterms,
+       # set ROS_MASTER_URI / GAZEBO_MASTER_URI so the subsequent
+       # gym.make() talks to the right master.
+       ros_port, gazebo_port, gazebo_proc = gazebo_core.launch_gazebo(
+           launch_roscore=True,
+           paused=False,
+           gui=True,
+       )
 
-   env = gym.make("RX200ReacherSim-v0")
-   obs, info = env.reset(seed=42)
-   for _ in range(100):
-       action = env.action_space.sample()
-       obs, reward, terminated, truncated, info = env.step(action)
-       if terminated or truncated:
-           obs, info = env.reset()
-   env.close()
+       rospy.init_node("rx200_quickstart")
+
+       env = gym.make("RX200ReacherSim-v0")
+       obs, info = env.reset(seed=42)
+       for _ in range(100):
+           action = env.action_space.sample()
+           obs, reward, terminated, truncated, info = env.step(action)
+           if terminated or truncated:
+               obs, info = env.reset()
+       env.close()
 
 Why ``import uniros as gym`` instead of ``import gymnasium as gym``?
 ``uniros.make`` spawns the env inside a worker process and hands

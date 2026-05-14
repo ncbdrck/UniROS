@@ -5,8 +5,14 @@ A ROS-based reinforcement-learning framework for robots, spanning
 Gazebo simulation and real-world hardware. Built on Gymnasium and
 Stable Baselines 3.
 
-The ecosystem is split across six packages so users can pick what
-they need:
+The ecosystem is split into four **core framework** packages plus
+two **application** packages that ship pre-built environments and
+training scripts. You can use the framework on its own or pull in
+the applications as ready-made examples.
+
+**Core framework**: UniROS, MultiROS, RealROS, ``sb3_ros_support``.
+
+**Applications**: ``rl_environments``, ``rl_training_validation``.
 
 .. list-table::
    :widths: 28 72
@@ -78,6 +84,7 @@ they need:
 
    guides/testing
    guides/contributing
+   guides/limitations
 
 
 Citation
@@ -88,8 +95,8 @@ If this ecosystem is useful in your work, please cite the paper:
 .. code-block:: bibtex
 
    @Article{s25185679,
-     AUTHOR  = {Kapukotuwa, Jayasekara and Lee, Brian and John, Deepu and Le-Khac, Nhien-An},
-     TITLE   = {UniROS: A Unified Framework Integrating Multimodal Simulation and Real-World Reinforcement Learning for Robotics},
+     AUTHOR  = {Kapukotuwa, Jayasekara and Lee, Brian and Devine, Declan and Qiao, Yuansong},
+     TITLE   = {UniROS: A Unified Framework for ROS-Based Reinforcement Learning Across Simulated and Real-World Robotics},
      JOURNAL = {Sensors},
      VOLUME  = {25},
      YEAR    = {2025},
