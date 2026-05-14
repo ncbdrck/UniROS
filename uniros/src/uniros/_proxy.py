@@ -2,20 +2,20 @@
 """
 Canonical gym-proxy implementation for the UniROS ecosystem.
 
-Before Round 8 this class was triplicated in three files
-(multiros/core.py, realros/core.py, uniros/core.py) and every bug
-fix had to land three times. The class lives here now; multiros and
-realros import it and alias it back to their historical names so
-existing user code (``from multiros.core import MultirosGym``,
-``from realros.core import RealrosGym``, ``from uniros.core import
-uniros_gym``) continues to work.
+This is the single source of truth for the multiprocessing
+gym-proxy class used by multiros, realros, and uniros. Each of
+those packages re-exports it under a historical name
+(``MultirosGym``, ``RealrosGym``, ``uniros_gym``) so existing user
+code continues to work — every alias points at the class defined
+here, so a fix landed here automatically reaches all three
+packages.
 
-The class spawns a worker process that runs the actual gym.Env
-inside it. Parent-side method calls (step / reset / close /
-attribute access) flow through a multiprocessing.Pipe to the worker
+The proxy spawns a worker process that holds the actual ``gym.Env``.
+Parent-side method calls (``step`` / ``reset`` / ``close`` /
+attribute access) flow over a ``multiprocessing.Pipe`` to the worker
 and back. Worker-side exceptions are caught and shipped back as
-_RemoteException so the parent re-raises with the worker's
-traceback instead of hanging on the next recv().
+:class:`_RemoteException`, so the parent re-raises with the
+worker's traceback instead of hanging on the next ``recv()``.
 """
 
 import traceback
@@ -54,14 +54,18 @@ class _RemoteException:
 
 class GymProxy:
     """
-    Parent-side proxy for a gym.Env running inside a worker process.
+    Parent-side proxy for a ``gym.Env`` running inside a worker process.
 
-    Historical aliases in the ecosystem:
-        multiros.core.MultirosGym = GymProxy
-        realros.core.RealrosGym  = GymProxy
-        uniros.core.uniros_gym   = GymProxy
+    Equivalent aliases re-exported by other packages in the ecosystem:
 
-    Usage:
+    - ``multiros.core.MultirosGym``
+    - ``realros.core.RealrosGym``
+    - ``uniros.core.uniros_gym``
+
+    All four names refer to the same class object.
+
+    Usage::
+
         from uniros.core import uniros_gym as gym  # or any alias
         env = gym.make("env_name", **kwargs)
         env.reset()

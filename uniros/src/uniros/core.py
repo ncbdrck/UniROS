@@ -2,12 +2,13 @@
 """
 Re-export of the canonical gym proxy.
 
-The actual implementation lives in ``uniros._proxy.GymProxy`` so
-that multiros and realros can re-export the exact same class
-without code duplication. The historical name ``uniros_gym``
-(lowercase, snake_case) is preserved here as an alias.
+The implementation lives in :mod:`uniros._proxy` as
+:class:`~uniros._proxy.GymProxy`. ``uniros_gym`` is a snake_case
+alias kept for backwards compatibility — both names refer to the
+same class object.
 
-Usage:
+Usage::
+
     from uniros.core import uniros_gym as gym
     env = gym.make("env_name", args)
     env.reset()
@@ -15,8 +16,8 @@ Usage:
 
 from uniros._proxy import GymProxy
 
-# Historical class name. Preserve the lowercase/snake_case spelling
-# the public API used before Round 8.
+# Snake_case alias kept for backwards compatibility with the older
+# uniros public API.
 uniros_gym = GymProxy
 
 __all__ = ["GymProxy", "uniros_gym"]

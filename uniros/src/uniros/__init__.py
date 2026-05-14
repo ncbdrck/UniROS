@@ -1,12 +1,9 @@
-# Re-exports for the UniROS public API.
-#
-# Round 8 split the actual proxy implementation out into
-# ``uniros._proxy.GymProxy``. The names below are preserved for
-# backwards compatibility:
+# Public API for the UniROS package.
 #
 #   uniros.make           - drop-in for gym.make / gymnasium.make
-#   uniros.uniros_gym     - the canonical proxy class (historical alias)
-#   uniros.GymProxy       - same class, canonical name
+#   uniros.GymProxy       - the canonical multiprocessing gym proxy
+#   uniros.uniros_gym     - snake_case alias for GymProxy (kept for
+#                           backwards compatibility)
 
 from uniros._proxy import GymProxy
 from uniros.core import uniros_gym
