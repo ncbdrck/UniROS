@@ -175,23 +175,6 @@ xdg-open docs/_build/html/index.html
 If you use UniROS in your research or work and would like to cite it, please cite the journal paper:
 
 ```bibtex
-@Article{s25185679,
-  AUTHOR  = {Kapukotuwa, Jayasekara and Lee, Brian and Devine, Declan and Qiao, Yuansong},
-  TITLE   = {UniROS: ROS-Based Reinforcement Learning Across Simulated and Real-World Robotics},
-  JOURNAL = {Sensors},
-  VOLUME  = {25},
-  YEAR    = {2025},
-  NUMBER  = {18},
-  PAGES   = {5679},
-  URL     = {https://www.mdpi.com/1424-8220/25/18/5679},
-  ISSN    = {1424-8220},
-  DOI     = {10.3390/s25185679},
-}
-```
-
-The earlier conference paper on the MultiROS sub-package:
-
-```bibtex
 @article{kapukotuwa_uniros_2025,
   title = {UniROS: A Unified Framework for ROS-Based Reinforcement Learning Across Simulated and Real-World Robotics},
   author = {Kapukotuwa, Jayasekara and Lee, Brian and Devine, Declan and Qiao, Yuansong},
@@ -205,6 +188,8 @@ The earlier conference paper on the MultiROS sub-package:
   url = {https://www.mdpi.com/1424-8220/25/18/5679}
 }
 ```
+The earlier conference paper on the MultiROS sub-package:
+
 ```bibtex
 @inproceedings{kapukotuwa_multiros_2022,
 	title = {{MultiROS}: {ROS}-{Based} {Robot} {Simulation} {Environment} for {Concurrent} {Deep} {Reinforcement} {Learning}},
