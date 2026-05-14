@@ -2,9 +2,9 @@ name: tests
 
 on:
   push:
-    branches: [main, master, gymnasium]
+    branches: [main, master, gymnasium, cleanup-2026]
   pull_request:
-    branches: [main, master, gymnasium]
+    branches: [main, master, gymnasium, cleanup-2026]
   workflow_dispatch: {}
 
 jobs:
