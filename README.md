@@ -111,48 +111,81 @@ git pull  # to update the repository
     env = gym.make('MyEnv-v0')
     ```
 
-## Scripheck_repos.sh`
-Below is the `check_repos.sh` script. Save this in your `home` directory and run it to check if `multiros` and `realros` are already downloaded.
+## Script: `check_repos.sh`
+Below is the `check_repos.sh` script. Save it in your `home` directory and run it to check if `multiros` and `realros` are already downloaded.
 
 ```bash
 #!/bin/bash
 
 # Function to check if a directory is a Git repository
 is_git_repo() {
-    if git -C $1 rev-parse 2>/dev/null; then
+    if git -C "$1" rev-parse 2>/dev/null; then
         return 0
     else
         return 1
     fi
 }
 
-# Directories where multiros and realros might exist
-MULTIROS_DIR="path/to/multiros"  # ~/catkin_ws/src/multiros
-REALROS_DIR="path/to/realros"  # ~/catkin_ws/src/realros
-t: `c
+# Directories where multiros and realros might exist.
+# Adjust these to match your workspace.
+MULTIROS_DIR="$HOME/catkin_ws/src/multiros"
+REALROS_DIR="$HOME/catkin_ws/src/realros"
+
 # Check multiros
-if [ -d "$MULTIROS_DIR" ] && is_git_repo $MULTIROS_DIR; then
-    echo "multiros repository found."
+if [ -d "$MULTIROS_DIR" ] && is_git_repo "$MULTIROS_DIR"; then
+    echo "multiros repository found at $MULTIROS_DIR"
 else
-    echo "multiros repository not found."
+    echo "multiros repository not found (looked in $MULTIROS_DIR)"
 fi
 
 # Check realros
-if [ -d "$rREALROS_DIR" ] && is_git_repo $REALROS_DIR; then
-    echo "realros repository found."
+if [ -d "$REALROS_DIR" ] && is_git_repo "$REALROS_DIR"; then
+    echo "realros repository found at $REALROS_DIR"
 else
-    echo "realros repository not found."
+    echo "realros repository not found (looked in $REALROS_DIR)"
 fi
 ```
 
-Replace `path/to/multiros` and `path/to/realros` with the actual paths where you expect these repositories to be.
-Since we are working with ROS, the path typically should be in the format of `~/ros_workspace_ws/src/`.
+Update `MULTIROS_DIR` and `REALROS_DIR` to match where these repositories live in your workspace. The typical layout for a ROS catkin workspace is `~/<workspace_name>_ws/src/<repo_name>/`.
+
+## Documentation
+
+Full documentation for the ecosystem — installation, ready-made
+environments, environment creation (sim and real), training with
+any gymnasium-compatible framework, joint sim+real training, and
+the API reference — lives in the [`docs/`](docs/) directory of
+this repository and is built with Sphinx.
+
+To preview locally:
+
+```bash
+cd ~/catkin_ws/src/UniROS
+pip install -r docs/requirements.txt
+sphinx-build -b html docs docs/_build/html
+xdg-open docs/_build/html/index.html
+```
 
 ## Cite
 
-If you use UniROS in your research or work and would like to cite it, you can use the following citation:
+If you use UniROS in your research or work and would like to cite it, please cite the journal paper:
 
-Articles:
+```bibtex
+@Article{s25185679,
+  AUTHOR  = {Kapukotuwa, Jayasekara and Lee, Brian and Devine, Declan and Qiao, Yuansong},
+  TITLE   = {UniROS: A Unified Framework for ROS-Based Reinforcement Learning Across Simulated and Real-World Robotics},
+  JOURNAL = {Sensors},
+  VOLUME  = {25},
+  YEAR    = {2025},
+  NUMBER  = {18},
+  PAGES   = {5679},
+  URL     = {https://www.mdpi.com/1424-8220/25/18/5679},
+  ISSN    = {1424-8220},
+  DOI     = {10.3390/s25185679},
+}
+```
+
+The earlier conference paper on the MultiROS sub-package:
+
 ```bibtex
 @inproceedings{kapukotuwa_multiros_2022,
 	title = {{MultiROS}: {ROS}-{Based} {Robot} {Simulation} {Environment} for {Concurrent} {Deep} {Reinforcement} {Learning}},
@@ -166,7 +199,9 @@ Articles:
 	pages = {1098--1103},
 }
 ```
+
 Repository:
+
 ```bibtex
 @misc{uniros,
   author = {Kapukotuwa, Jayasekara},

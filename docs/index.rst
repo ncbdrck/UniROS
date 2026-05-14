@@ -58,6 +58,7 @@ they need:
    :caption: Training
 
    guides/training
+   guides/joint_sim_real_training
    guides/using_trained_models
 
 .. toctree::

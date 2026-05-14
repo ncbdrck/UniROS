@@ -1,28 +1,38 @@
 Training a model
 ================
 
-This page covers wiring a gym env into Stable Baselines 3 via
-:doc:`/api/sb3_ros_support`. The package adapts SB3 for ROS-based
-training scripts: each algorithm subclass exposes a uniform
-``train`` / ``validate`` / ``save`` / ``load`` surface, so swapping
-PPO for SAC for TD3 is a configuration edit, not a code rewrite.
+The environments produced by this framework are **standard
+gymnasium environments**. Any reinforcement-learning library that
+speaks the gymnasium API — Stable Baselines 3, CleanRL, Tianshou,
+RLlib, Tensorforce, or your own training loop — works without
+modification.
+
+``uniros.make()`` returns a proxy that behaves like ``gym.Env``
+but runs the underlying env in a worker process. That's the only
+framework-specific detail; everything downstream is vanilla
+gymnasium.
+
+This page shows three increasingly involved options:
+
+1. :ref:`training-raw-sb3` — pure Stable Baselines 3 with no
+   ROS-specific wrappers.
+2. :ref:`training-sb3-ros-support` — the convenience layer that
+   ships with this ecosystem (YAML config, ROS-aware paths,
+   uniform train / save / load surface, HER ready for goal envs).
+3. :ref:`training-other-frameworks` — pointers for using CleanRL,
+   Tianshou, RLlib, or a custom loop.
+
+For the dedicated joint-sim-and-real training pattern (Use Case
+C from the paper), see :doc:`joint_sim_real_training`.
 
 
-Anatomy of a training script
-----------------------------
+.. _training-raw-sb3:
 
-A typical training script does five things:
+Option 1 — Plain Stable Baselines 3
+-----------------------------------
 
-1. Launch the env infrastructure (Gazebo for sim, or attach to a
-   robot driver for real).
-2. ``import uniros as gym`` and ``gym.make`` your env.
-3. Instantiate the algorithm wrapper from ``sb3_ros_support``
-   pointing at a YAML config file.
-4. Call ``.train()`` then ``.save_model()``.
-5. (Optional) Validate the trained model on the same env or its
-   real-world counterpart.
-
-A minimal example for the RX200 reach env:
+The simplest possible training script. No YAML, no extra wrappers,
+just SB3 against a uniros-managed env.
 
 .. code-block:: python
 
@@ -30,22 +40,70 @@ A minimal example for the RX200 reach env:
    import rospy
    from multiros.utils import gazebo_core
    import uniros as gym
-   import rl_environments                     # registers the gym IDs
+   import rl_environments  # registers gym IDs
+
+   from stable_baselines3 import SAC
+
+
+   if __name__ == "__main__":
+       gazebo_core.launch_gazebo(launch_roscore=True, gui=False)
+       rospy.init_node("rx200_reach_train_plain_sb3")
+
+       env = gym.make("RX200ReacherSim-v0")
+
+       model = SAC(
+           "MlpPolicy",
+           env,
+           learning_rate=3e-4,
+           buffer_size=1_000_000,
+           batch_size=256,
+           tensorboard_log="./tb_logs/",
+           verbose=1,
+       )
+       model.learn(total_timesteps=100_000)
+       model.save("rx200_reach_sac")
+
+       env.close()
+
+This works because ``uniros.make`` returns an object that responds
+to ``reset`` / ``step`` / ``close`` exactly like ``gym.Env``. SB3
+doesn't know or care about ROS.
+
+
+.. _training-sb3-ros-support:
+
+Option 2 — sb3_ros_support
+--------------------------
+
+If your script already lives in a ROS package and you want
+config-driven training (so swapping PPO for SAC for TD3 is a YAML
+edit, not a code rewrite), :doc:`/api/sb3_ros_support` adds:
+
+* A ``BasicModel`` base class and one subclass per algorithm —
+  ``PPO``, ``A2C``, ``DDPG``, ``TD3``, ``SAC``, ``DQN``, plus their
+  goal-conditioned ``*_GOAL`` variants for HER.
+* YAML-driven hyperparameter loading via ``ros_load_yaml``.
+* Convenient ``train`` / ``save_model`` / ``load_trained_model``
+  / ``predict`` surface that wraps the underlying SB3 model.
+
+.. code-block:: python
+
+   #!/bin/python3
+   import rospy
+   from multiros.utils import gazebo_core
+   import uniros as gym
+   import rl_environments
 
    from sb3_ros_support.sac import SAC
 
 
    if __name__ == "__main__":
-       # 1. Bring up Gazebo + roscore
        gazebo_core.launch_gazebo(launch_roscore=True, gui=False)
        rospy.init_node("rx200_reach_train_sim")
 
-       # 2. Make the env via uniros so it runs in a worker process
        env = gym.make("RX200ReacherSim-v0")
        env.reset()
 
-       # 3. Instantiate the SAC wrapper. The config_filename points
-       #    to a YAML file inside the rl_environments package.
        model = SAC(
            env,
            save_model_path="/models/sac/",
@@ -55,126 +113,148 @@ A minimal example for the RX200 reach env:
            config_filename="sac.yaml",
        )
 
-       # 4. Train and save
        model.train()
        model.save_model()
 
        env.close()
 
+Working examples live under
+``rl_training_validation/src/rl_training_validation/rx200/reach/``:
 
-Algorithm wrappers
-------------------
+* ``rx200_reach_train_sim.py`` / ``rx200_reach_validate_sim.py``
+* ``rx200_reach_train_real.py`` / ``rx200_reach_validate_real.py``
 
-``sb3_ros_support`` exposes one class per SB3 algorithm. Each
-subclasses :class:`sb3_ros_support.core.BasicModel`:
-
-**Non-goal algorithms** (use with regular ``gym.Env``)
-
-* :class:`sb3_ros_support.ppo.PPO`
-* :class:`sb3_ros_support.a2c.A2C`
-* :class:`sb3_ros_support.ddpg.DDPG`
-* :class:`sb3_ros_support.td3.TD3`
-* :class:`sb3_ros_support.sac.SAC`
-* :class:`sb3_ros_support.dqn.DQN`
-
-**Goal-conditioned algorithms** (use with goal envs;
-HER replay buffer enabled in config)
-
-* :class:`sb3_ros_support.ddpg_goal.DDPG_GOAL`
-* :class:`sb3_ros_support.td3_goal.TD3_GOAL`
-* :class:`sb3_ros_support.sac_goal.SAC_GOAL`
-* :class:`sb3_ros_support.dqn_goal.DQN_GOAL`
-
-Switching between them requires changing one import and one class
-name; the rest of the script stays the same. The hyperparameters
-move into the YAML file.
+See :doc:`/api/sb3_ros_support` for the full algorithm list, and
+:doc:`/api/rl_training_validation` for the working scripts.
 
 
-YAML configuration
-------------------
+.. _training-other-frameworks:
 
-Every algorithm reads hyperparameters from a YAML file. Look in
-``rl_environments/config/`` for working examples (e.g.
-``sac.yaml``, ``td3.yaml``, ``sac_goal.yaml``). Typical contents:
+Option 3 — Any other gymnasium-compatible framework
+---------------------------------------------------
+
+CleanRL, Tianshou, RLlib, Tensorforce, or a hand-written training
+loop all work — they each accept a ``gym.Env`` (or
+``gymnasium.Env``) and that's what ``uniros.make`` produces.
+
+**CleanRL**
+
+CleanRL training scripts are single-file. Replace the line that
+creates ``env`` with ``uniros.make``:
+
+.. code-block:: python
+
+   import uniros as gym
+   import rl_environments
+
+   def make_env(env_id):
+       def thunk():
+           env = gym.make(env_id)
+           return env
+       return thunk
+
+   # ... rest of CleanRL ppo_continuous_action.py / sac_continuous_action.py
+   # uses `make_env` as is.
+
+**Tianshou**
+
+.. code-block:: python
+
+   import uniros as gym
+   import rl_environments
+   from tianshou.env import DummyVectorEnv
+   from tianshou.policy import SACPolicy
+
+   env = DummyVectorEnv([lambda: gym.make("RX200ReacherSim-v0")
+                        for _ in range(4)])
+   # ... continue with the standard Tianshou trainer.
+
+**RLlib**
+
+RLlib expects a registered env. Register a thin wrapper:
+
+.. code-block:: python
+
+   from ray.tune.registry import register_env
+   import uniros as uniros_gym
+   import rl_environments
+
+   def _make(config):
+       return uniros_gym.make(config["env_id"])
+
+   register_env("rx200_reacher", _make)
+
+   # algo = ppo.PPO(config={"env": "rx200_reacher",
+   #                        "env_config": {"env_id": "RX200ReacherSim-v0"},
+   #                        ...})
+
+**Hand-written training loop**
+
+.. code-block:: python
+
+   import uniros as gym
+   import rl_environments
+
+   env = gym.make("RX200ReacherSim-v0")
+   obs, _ = env.reset(seed=0)
+   for step in range(100_000):
+       action = your_policy(obs)
+       obs, reward, term, trunc, info = env.step(action)
+       your_learner.observe(obs, action, reward, term)
+       if term or trunc:
+           obs, _ = env.reset()
+
+The only point where the framework's identity matters is the call
+to ``uniros.make`` (which runs the env in a worker process). Once
+you have the proxy in hand, treat it as a normal gymnasium env.
+
+
+Configuration via YAML (sb3_ros_support)
+----------------------------------------
+
+When using ``sb3_ros_support``, hyperparameters live in a YAML file
+under ``rl_environments/config/`` or any ROS package you control.
+A typical file:
 
 .. code-block:: yaml
 
-   # ---- training schedule ----
    total_timesteps: 100000
    learning_starts: 1000
 
-   # ---- policy ----
    policy: "MlpPolicy"
    policy_kwargs:
      net_arch: [256, 256]
    learning_rate: 0.0003
 
-   # ---- buffer / batch ----
    buffer_size: 1000000
    batch_size: 256
    gamma: 0.99
    tau: 0.005
 
-   # ---- exploration / noise ----
    action_noise:
      type: "normal"
      mean: 0.0
      stddev: 0.1
 
-   # ---- HER (only for *_GOAL algorithms) ----
+   # HER block (only for *_GOAL algorithms)
    her:
      n_sampled_goal: 4
      goal_selection_strategy: "future"
 
-The exact keys recognised depend on the algorithm; see
-:class:`sb3_ros_support.core.BasicModel.__init__` and the
-algorithm-specific subclass.
-
-
-Working training scripts
-------------------------
-
-In ``rl_training_validation/src/rl_training_validation/``:
-
-* ``rx200/reach/rx200_reach_train_sim.py`` — RX200 sim reach training.
-* ``rx200/reach/rx200_reach_validate_sim.py`` — load a trained
-  RX200 model and run validation episodes.
-* ``rx200/reach/rx200_reach_train_real.py`` — same task, real hardware.
-* ``rx200/reach/rx200_reach_validate_real.py`` — real-world validation.
-* ``multi_task_learning/multi_train_sim.py`` — joint training across
-  multiple task envs in one process.
-
-Copy any of these as the starting point for a new training script;
-swap the env ID, config file, and algorithm class.
-
-
-Sim-to-real and joint training
-------------------------------
-
-The framework supports three common workflows:
-
-1. **Sim-only** — train under ``...Sim-v0``, save the model. Easy
-   iteration; no hardware risk.
-2. **Sim-then-real validation** — train in sim, then load the
-   saved model against the matching ``...Real-v0`` env to validate
-   without further updates. See :doc:`using_trained_models`.
-3. **Joint sim+real training** — run two envs (one sim, one real)
-   in the same training loop so the policy receives transitions
-   from both worlds. This needs a ``MultiTaskEnv`` wrapper
-   (:mod:`rl_training_validation.utils.multi_task_env`) and a
-   training script that holds both envs open.
+Pass the filename to the algorithm wrapper's ``config_filename``;
+all the keys above are read at ``train()`` time.
 
 
 Logging and checkpoints
 -----------------------
 
-SB3 writes TensorBoard logs to ``log_path`` and periodic
-checkpoints to ``save_model_path``. To watch training live:
+Whichever option you use, TensorBoard is the standard reader:
 
 .. code-block:: bash
 
-   tensorboard --logdir /path/to/logs/sac/
+   tensorboard --logdir /path/to/logs/
 
-Final model is saved by ``model.save_model()`` as a ``.zip`` file
-that :func:`sb3_ros_support.core.BasicModel.load_trained_model`
-can later read back.
+Saved models from ``sb3_ros_support`` are SB3 ``.zip`` files that
+can be loaded back via
+:func:`sb3_ros_support.core.BasicModel.load_trained_model` or
+SB3's own ``Algorithm.load(...)``.

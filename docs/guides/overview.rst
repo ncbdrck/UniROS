@@ -121,11 +121,61 @@ If you want to clobber every ROS / Gazebo session on the machine
 ``host`` in the name is the warning.
 
 
+Three supported use cases
+-------------------------
+
+The UniROS paper (`Kapukotuwa et al., 2025
+<https://www.mdpi.com/1424-8220/25/18/5679>`_, Section IX) lays
+out three workflows the framework is designed to support. The
+choice depends on whether you have a simulator, real hardware, or
+both — and whether you want a sim-trained policy, a real-trained
+policy, or a generalised policy that performs in both worlds:
+
+.. list-table::
+   :widths: 22 78
+   :header-rows: 1
+
+   * - Use case
+     - What it looks like
+   * - **Real-world only**
+     - Train directly on the physical robot via RealROS. Every
+       episode is a real episode. Slowest, but no reality-gap.
+       See :doc:`env_creation_real` and :doc:`training`.
+   * - **Sim → real transfer**
+     - Train under a MultiROS env, save the model, validate on
+       the matching RealROS env with no further updates.
+       Reasonable when the simulator is close to reality.
+       See :doc:`using_trained_models`.
+   * - **Joint sim + real training**
+     - Hold a sim env and a real env open at the same time,
+       sample episodes from both, and update one policy from the
+       combined replay buffer. The result is a single policy
+       that's competent in both domains by construction.
+       See :doc:`joint_sim_real_training`.
+
+
+Framework-agnostic policies
+---------------------------
+
+The envs this framework produces are **standard gymnasium
+environments**. Any reinforcement-learning library that accepts a
+``gym.Env`` works: Stable Baselines 3, CleanRL, Tianshou, RLlib,
+Tensorforce, or your own training loop. ``uniros.make()`` returns
+a proxy that behaves like ``gym.Env`` while running the underlying
+env in a worker process; the downstream training code is
+unchanged.
+
+:doc:`/api/sb3_ros_support` is a convenience layer for SB3 users
+(YAML hyperparameter loading, ROS-aware paths, HER ready for goal
+envs). It is **one option** — not a requirement.
+
+
 Reading further
 ---------------
 
 * :doc:`/api/uniros` — the canonical class and shared utilities.
 * :doc:`/api/multiros` — Gazebo-side API.
 * :doc:`/api/realros` — real-hardware-side API.
-* :doc:`/api/sb3_ros_support` — algorithm wrappers.
+* :doc:`/api/sb3_ros_support` — algorithm wrappers (one option for
+  SB3 users; vanilla SB3 / CleanRL / Tianshou / RLlib all work).
 * :doc:`testing` — how to run the regression test suites.
