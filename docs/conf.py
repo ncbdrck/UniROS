@@ -55,8 +55,8 @@ except ImportError:
 project = "UniROS ecosystem"
 author = "Jayasekara Kapukotuwa"
 copyright = f"{date.today().year}, {author}"
-release = "0.2.0"
-version = "0.2"
+release = "0.3.0"
+version = "0.3"
 
 # ---------------------------------------------------------------- Source path
 # Add the framework packages so autodoc can import them. Paths are
