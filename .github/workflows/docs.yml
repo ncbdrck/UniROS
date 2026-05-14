@@ -25,6 +25,15 @@ jobs:
       # Clone each at the SAME branch ref this workflow is running on
       # (gymnasium → gymnasium, feature branches → matching branch,
       # etc.) so the docs render the matching versions of every package.
+      #
+      # LOCKSTEP REQUIREMENT: these checkouts have no fallback — the
+      # matching branch MUST exist in multiros / realros / sb3_ros_support
+      # or actions/checkout fails the job. When opening a feature branch
+      # in UniROS that touches docs, push the same branch name to the
+      # other three repos first (an empty no-op commit is enough).
+      # rl_environments / rl_training_validation are handled below with
+      # an explicit gymnasium → main fallback because they don't use
+      # the gymnasium branch convention.
       - name: Check out multiros
         uses: actions/checkout@v4
         with:

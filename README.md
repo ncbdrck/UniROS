@@ -23,7 +23,7 @@ There are two ways to set up this repository:
 2. **Using Existing MultiROS and RealROS:** Choose this if you already have these repositories cloned and set up independently. 
 
 ## Pre-Setup: Check Existing Repositories
-Before proceeding with the setup, determine if you already have multiros and realros on your system. Run the provided `check_repos.sh` script to automatically check for these repositories:
+Before proceeding with the setup, determine if you already have multiros and realros on your system. The [check_repos.sh](#script-check_repossh) snippet below this README does that automatically — copy its contents into a file called `check_repos.sh` in your home directory (or anywhere on `$PATH`), make it executable (`chmod +x check_repos.sh`), then run it:
 
 ```bash
 ./check_repos.sh

@@ -4,7 +4,10 @@ from catkin_pkg.python_setup import generate_distutils_setup
 # fetch values from package.xml
 setup_args = generate_distutils_setup(
     name="uniros",
-    packages=['uniros'],
+    packages=[
+        'uniros',
+        'uniros.utils',
+    ],
     package_dir={'': 'src'},
     # PEP 561: ship the py.typed marker so type checkers (mypy /
     # pyright) treat installed copies of the package as typed.
