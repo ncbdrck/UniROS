@@ -26,6 +26,8 @@ ROS service reference:
 http://docs.ros.org/en/noetic/api/controller_manager_msgs/html/index-msg.html
 """
 
+from typing import List, Optional
+
 import rospy
 from controller_manager_msgs.srv import *
 
@@ -34,7 +36,7 @@ from controller_manager_msgs.srv import *
 """
 
 
-def load_ros_controller(controller_name: str, ns: str = None, max_retries: int = 5) -> bool:
+def load_ros_controller(controller_name: str, ns: Optional[str] = None, max_retries: int = 5) -> bool:
     """
     Function to load a ROS controller using the controller_manager_msgs/LoadController service.
     (Need to have this controller loaded in the parameter server)
@@ -83,7 +85,7 @@ def load_ros_controller(controller_name: str, ns: str = None, max_retries: int =
 """
 
 
-def load_controller_list(controller_list: list, ns: str = None, max_retries: int = 5) -> bool:
+def load_controller_list(controller_list: List[str], ns: Optional[str] = None, max_retries: int = 5) -> bool:
     """
     Function to load a list of ROS controllers.
 
@@ -109,7 +111,7 @@ def load_controller_list(controller_list: list, ns: str = None, max_retries: int
 """
 
 
-def list_loaded_controllers(ns: str = None, max_retries: int = 5) -> list:
+def list_loaded_controllers(ns: Optional[str] = None, max_retries: int = 5) -> List[str]:
     """
     Function to list all loaded ROS controllers using the controller_manager_msgs/ListControllers service.
 
@@ -157,7 +159,7 @@ def list_loaded_controllers(ns: str = None, max_retries: int = 5) -> list:
 """
 
 
-def unload_ros_controller(controller_name: str, ns: str = None, max_retries: int = 5) -> bool:
+def unload_ros_controller(controller_name: str, ns: Optional[str] = None, max_retries: int = 5) -> bool:
     """
     Function to unload a ROS controller using the controller_manager_msgs/UnloadController service.
 
@@ -206,7 +208,7 @@ def unload_ros_controller(controller_name: str, ns: str = None, max_retries: int
 """
 
 
-def unload_controller_list(controller_list: list, ns: str = None, max_retries: int = 5) -> bool:
+def unload_controller_list(controller_list: List[str], ns: Optional[str] = None, max_retries: int = 5) -> bool:
     """
     Function to unload a list of ROS controllers using the unload_ros_controller function.
 
@@ -232,7 +234,7 @@ def unload_controller_list(controller_list: list, ns: str = None, max_retries: i
 """
 
 
-def switch_controllers(start_controllers_list: list, stop_controllers_list: list, ns: str = None,
+def switch_controllers(start_controllers_list: List[str], stop_controllers_list: List[str], ns: Optional[str] = None,
                        strictness: int = 1, start_asap: bool = False, timeout: float = 0.0,
                        max_retries: int = 5) -> bool:
     """
@@ -288,7 +290,7 @@ def switch_controllers(start_controllers_list: list, stop_controllers_list: list
 """
 
 
-def start_controllers(controller_list: list, ns: str = None,
+def start_controllers(controller_list: List[str], ns: Optional[str] = None,
                       strictness: int = 1, start_asap: bool = False, timeout: float = 0.0,
                       max_retries: int = 5) -> bool:
     """
@@ -314,7 +316,7 @@ def start_controllers(controller_list: list, ns: str = None,
 """
 
 
-def stop_controllers(controller_list: list, ns: str = None,
+def stop_controllers(controller_list: List[str], ns: Optional[str] = None,
                      strictness: int = 1, start_asap: bool = False, timeout: float = 0.0,
                      max_retries: int = 5) -> bool:
     """
@@ -340,7 +342,7 @@ def stop_controllers(controller_list: list, ns: str = None,
 """
 
 
-def reset_controllers(controller_list: list, ns: str = None,
+def reset_controllers(controller_list: List[str], ns: Optional[str] = None,
                       strictness: int = 1, start_asap: bool = False, timeout: float = 0.0,
                       max_retries: int = 5) -> bool:
     """
@@ -375,7 +377,7 @@ def reset_controllers(controller_list: list, ns: str = None,
 """
 
 
-def spawn_controllers(controller_list: list, ns: str = None,
+def spawn_controllers(controller_list: List[str], ns: Optional[str] = None,
                       strictness: int = 1, start_asap: bool = False, timeout: float = 0.0,
                       max_retries: int = 5) -> bool:
     """
@@ -410,7 +412,7 @@ def spawn_controllers(controller_list: list, ns: str = None,
 """
 
 
-def unspawn_controllers(controller_list: list, ns: str = None,
+def unspawn_controllers(controller_list: List[str], ns: Optional[str] = None,
                         strictness: int = 1, start_asap: bool = False, timeout: float = 0.0,
                         max_retries: int = 5) -> bool:
     """

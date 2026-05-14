@@ -62,6 +62,21 @@ several in parallel against different rosmasters without
 cross-contamination. The drop-in replacement keeps the rest of
 your training code identical.
 
+The proxy is also a context manager, which is the recommended
+shape for short-lived scripts:
+
+.. code-block:: python
+
+   import uniros as gym
+   with gym.make("RX200ReacherSim-v0") as env:
+       obs, info = env.reset(seed=42)
+       for _ in range(100):
+           action = env.action_space.sample()
+           obs, reward, terminated, truncated, info = env.step(action)
+           if terminated or truncated:
+               obs, info = env.reset()
+   # env.close() runs automatically on exit, even if the block raised.
+
 
 Press Ctrl+C
 ------------

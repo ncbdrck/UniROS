@@ -2,14 +2,13 @@
 Regression tests for ``uniros._proxy.GymProxy`` — the multiprocessing
 gym-env proxy that multiros / realros / uniros all share.
 
-Covers the fixes locked in by Rounds 4, 4-fu, and 8.1:
+Covers the following invariants:
   - Worker-side exceptions surface as parent-side RuntimeError
-    (Round 4: worker error propagation across the pipe).
-  - ``env.unwrapped is env`` (Round 4-fu: SB3 DummyVecEnv pickle
-    compatibility).
+    (worker error propagation across the pipe).
+  - ``env.unwrapped is env`` (SB3 DummyVecEnv pickle compatibility).
   - ``close()`` is idempotent across multiple calls and ``__del__``.
   - All historical aliases (MultirosGym, RealrosGym, uniros_gym)
-    resolve to the same class object (Round 8.1: extraction).
+    resolve to the same class object.
 """
 import pytest
 import numpy as np
@@ -51,13 +50,13 @@ class _TinyEnv(gym.Env):
 
 
 class _BoomEnv(gym.Env):
-    """Env whose constructor raises — exercises Round 4's startup-phase error path."""
+    """Env whose constructor raises — exercises the startup-phase error path."""
     def __init__(self):
         raise ValueError("boom-on-construct")
 
 
 class _StepBoomEnv(gym.Env):
-    """Env whose step() raises — exercises Round 4's command-loop error path."""
+    """Env whose step() raises — exercises the command-loop error path."""
     def __init__(self):
         self.observation_space = spaces.Box(-1, 1, (2,), dtype=np.float32)
         self.action_space = spaces.Box(-1, 1, (1,), dtype=np.float32)
@@ -71,9 +70,6 @@ class _StepBoomEnv(gym.Env):
 gym.register("UnirosTestTiny-v0", entry_point=_TinyEnv)
 gym.register("UnirosTestBoomCtor-v0", entry_point=_BoomEnv)
 gym.register("UnirosTestBoomStep-v0", entry_point=_StepBoomEnv)
-
-
-# ---------------------------------------------------------------- Round 8.1
 
 
 class TestAliasIdentity:
@@ -150,9 +146,6 @@ class TestEndToEnd:
             env.close()
 
 
-# ---------------------------------------------------------------- Round 4-fu
-
-
 class TestUnwrappedProperty:
     """env.unwrapped must return self (no IPC) for SB3 compatibility."""
 
@@ -166,9 +159,6 @@ class TestUnwrappedProperty:
             assert env.unwrapped is env
         finally:
             env.close()
-
-
-# ---------------------------------------------------------------- Round 1.4
 
 
 class TestIdempotentClose:
@@ -185,14 +175,39 @@ class TestIdempotentClose:
         del env  # __del__ calls close again; must not raise
 
 
-# ---------------------------------------------------------------- Round 4
+class TestContextManager:
+    """`with uniros.make(...) as env:` cleans up on both success and exception."""
+
+    def test_with_block_closes_on_success(self):
+        with GymProxy.make("UnirosTestTiny-v0") as env:
+            assert env._closed is False
+            env.reset()
+        # After the with block, close() should have been called.
+        assert env._closed is True
+
+    def test_with_block_closes_on_exception(self):
+        env_ref = []
+        with pytest.raises(RuntimeError, match="boom"):
+            with GymProxy.make("UnirosTestTiny-v0") as env:
+                env_ref.append(env)
+                raise RuntimeError("boom")
+        # __exit__ ran close() on the way out; the exception still propagates.
+        assert env_ref[0]._closed is True
+
+    def test_with_block_propagates_exception(self):
+        # __exit__ must return None (falsy) so exceptions aren't swallowed.
+        sentinel = ValueError("propagate me")
+        with pytest.raises(ValueError) as excinfo:
+            with GymProxy.make("UnirosTestTiny-v0"):
+                raise sentinel
+        assert excinfo.value is sentinel
 
 
 class TestWorkerErrorPropagation:
     """A worker raising must surface as a parent-side RuntimeError, not hang."""
 
     def test_worker_raises_during_make(self):
-        # Round 4: startup-phase error must reach parent via _RemoteException
+        # Startup-phase error must reach parent via _RemoteException
         # rather than the parent blocking on recv() forever.
         with pytest.raises(RuntimeError) as excinfo:
             GymProxy.make("UnirosTestBoomCtor-v0")
@@ -200,7 +215,7 @@ class TestWorkerErrorPropagation:
         assert "ValueError" in str(excinfo.value)
 
     def test_worker_raises_during_step(self):
-        # Round 4: command-loop error must reach parent.
+        # Command-loop error must reach parent.
         env = GymProxy.make("UnirosTestBoomStep-v0")
         try:
             env.reset()

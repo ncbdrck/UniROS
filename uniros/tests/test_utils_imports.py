@@ -2,7 +2,8 @@
 Smoke tests for the public API of ``uniros.utils.*``.
 
 These modules host the canonical implementations of ros_markers,
-ros_kinematics, and ros_controllers (Round 8.2 extraction). Tests
+ros_kinematics, and ros_controllers (the modules that multiros and
+realros re-export from). Tests
 here protect the import surface so that future refactors don't
 silently drop public names that multiros / realros re-export.
 
@@ -32,7 +33,7 @@ def _public_top_level_names_from_file(path: pathlib.Path) -> set:
 
 
 class TestRosMarkersAPI:
-    """ros_markers public surface (Round 8.2 canonical home)."""
+    """ros_markers public surface (canonical home)."""
 
     def test_imports(self):
         from uniros.utils.ros_markers import RosMarker, RosMarkerArray
@@ -50,7 +51,7 @@ class TestRosMarkersAPI:
 
 
 class TestRosControllersAPI:
-    """ros_controllers public surface (Round 8.2 canonical home)."""
+    """ros_controllers public surface (canonical home)."""
 
     EXPECTED = {
         "load_ros_controller", "load_controller_list", "list_loaded_controllers",
@@ -75,7 +76,7 @@ class TestRosControllersAPI:
 
 
 class TestRosKinematicsAPI:
-    """ros_kinematics public surface (Round 8.2 canonical home).
+    """ros_kinematics public surface (canonical home).
 
     AST-based check only — PyKDL / urdf_parser_py are heavy native deps
     and we don't want the test suite to require them.

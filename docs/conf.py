@@ -11,15 +11,52 @@ real ROS install.
 
 import os
 import sys
+import warnings
 from datetime import date
+
+# Local developer builds where TensorFlow / SB3 are installed (autodoc
+# doesn't reach for them in CI because they're mocked) pull in CUDA /
+# TensorRT log lines from the TensorFlow C++ runtime. Silence at the
+# source — must happen before TensorFlow is imported anywhere.
+# Level 3 = ERROR-and-fatal-only; suppresses INFO, WARNING, and the
+# "Could not load dynamic library libcudart" / TF-TRT messages.
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
+
+# autodoc imports rl_environments which registers gymnasium env IDs at
+# import time. Re-importing the same module (which Sphinx does during
+# build) re-runs the registration and gymnasium emits a UserWarning
+# per env ID ("Overriding environment X-v0 already in registry"). Hide
+# them — they're a side-effect of the docs build, not a code defect.
+warnings.filterwarnings(
+    "ignore",
+    message=r".*Overriding environment .* already in registry.*",
+    category=UserWarning,
+    module=r"gymnasium\.envs\.registration",
+)
+
+# gymnasium_robotics 1.2.4's package init does a raw
+# print(..., file=sys.stderr) of the "AdroitHand* reward functions
+# were updated in v1.2.1 ..." notice on first import (via
+# farama_notifications). It can't be silenced via the warnings module.
+# Preload the module once with both stdout and stderr redirected, so
+# any later import autodoc triggers hits Python's module cache and
+# re-runs nothing.
+try:
+    import contextlib
+    import io
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+        import gymnasium_robotics  # noqa: F401
+except ImportError:
+    # Not installed on this builder; not a noise problem then.
+    pass
 
 # ---------------------------------------------------------------- Project
 
 project = "UniROS ecosystem"
 author = "Jayasekara Kapukotuwa"
 copyright = f"{date.today().year}, {author}"
-release = "1.0.0"
-version = "1.0"
+release = "0.3.0"
+version = "0.3"
 
 # ---------------------------------------------------------------- Source path
 # Add the framework packages so autodoc can import them. Paths are

@@ -18,24 +18,27 @@ Repositories
    * - https://github.com/ncbdrck/UniROS
      - Canonical home for the gym-proxy class and shared ROS
        utilities. Bug fixes here flow to multiros and realros via
-       re-exports.
+       re-exports. Also hosts this documentation site.
    * - https://github.com/ncbdrck/multiros
      - Gazebo simulation layer.
    * - https://github.com/ncbdrck/realros
      - Real-hardware layer.
    * - https://github.com/ncbdrck/sb3_ros_support
      - Stable Baselines 3 wrappers.
-   * - https://github.com/ncbdrck/MultiROS_Real
-     - This documentation site, plus internal review notes.
+   * - https://github.com/ncbdrck/rl_environments
+     - Ready-made gymnasium environments (RX200, NED2, ...).
+   * - https://github.com/ncbdrck/rl_training_validation
+     - Training scripts that exercise the rl_environments envs.
 
 
 Development setup
 -----------------
 
 Set up a Noetic catkin workspace as in :doc:`install`, then check
-out the development branches you want to work on. Most active work
-happens on a ``cleanup-2026`` (or successor) branch before merging
-to the public default.
+out the development branches you want to work on. Active work
+usually happens on a feature or integration branch before merging
+to the repo's default branch (``gymnasium`` for the four framework
+repos, ``main`` for the application repos).
 
 Run the test suites before committing — see :doc:`testing`.
 
@@ -43,11 +46,24 @@ For docs work specifically:
 
 .. code-block:: bash
 
-   cd ~/catkin_ws/src/MultiROS_Real
+   cd ~/catkin_ws/src/UniROS
    pip install -r docs/requirements.txt
    sphinx-build -b html docs docs/_build/html
 
 Open ``docs/_build/html/index.html`` in a browser to preview.
+
+Before pushing docs changes, run the Python-code-block
+syntax check that CI runs:
+
+.. code-block:: bash
+
+   python scripts/check_python_code_blocks.py docs -v
+
+It compiles every ``.. code-block:: python`` snippet under
+``docs/``. ``SyntaxError`` here usually means a trailing ``...``
+inside a function call, a missing closing bracket, or a
+pseudo-code snippet that should have been tagged ``.. code-block::
+text`` (or any non-``python`` lexer) rather than ``python``.
 
 
 Commit conventions
