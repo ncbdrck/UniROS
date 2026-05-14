@@ -19,6 +19,9 @@ worker's traceback instead of hanging on the next ``recv()``.
 """
 
 import traceback
+from multiprocessing.connection import Connection
+from typing import Any, Mapping, NoReturn, Optional, Tuple
+
 import gymnasium as gym
 from multiprocessing import Process, Pipe
 
@@ -40,12 +43,12 @@ class _RemoteException:
     """
     __slots__ = ('exc_type_name', 'exc_repr', 'tb_string')
 
-    def __init__(self, exc, tb_string):
+    def __init__(self, exc: BaseException, tb_string: str) -> None:
         self.exc_type_name = type(exc).__name__
         self.exc_repr = repr(exc)
         self.tb_string = tb_string
 
-    def reraise(self):
+    def reraise(self) -> NoReturn:
         raise RuntimeError(
             f"Exception in GymProxy worker process "
             f"({self.exc_type_name}: {self.exc_repr}):\n{self.tb_string}"
@@ -71,21 +74,21 @@ class GymProxy:
         env.reset()
     """
 
-    def __init__(self, env_name, *args, **kwargs):
+    def __init__(self, env_name: str, *args: Any, **kwargs: Any) -> None:
         # Set _closed first so close() / __del__ can be idempotent even if
         # the rest of __init__ raises before completing.
-        self._closed = False
+        self._closed: bool = False
         # Create a pipe for communication between the main process and the worker process
         self.parent_conn, self.child_conn = Pipe()
         # Start the worker process and pass it the environment name, the child connection, and any additional arguments
         self.process = Process(target=self.worker, args=(env_name, self.child_conn, *args), kwargs=kwargs)
         self.process.start()
         # Initialize the observation and action spaces to None
-        self.observation_space = None
-        self.action_space = None
+        self.observation_space: Optional[gym.Space] = None
+        self.action_space: Optional[gym.Space] = None
 
     @staticmethod
-    def worker(env_name, conn, *args, **kwargs):
+    def worker(env_name: str, conn: Connection, *args: Any, **kwargs: Any) -> None:
         # --- Startup phase --------------------------------------------------
         # If gym.make() raises, the parent is blocked on recv() in make().
         # Send a _RemoteException so the parent can re-raise it and close,
@@ -117,6 +120,11 @@ class GymProxy:
                 return
 
             try:
+                # `result` carries env-dependent types between branches:
+                # tuples from step/reset, arbitrary values from getattr,
+                # AttributeError-as-value from "attr not found", etc.
+                # Explicit Any so mypy doesn't lock it to the first branch.
+                result: Any
                 if cmd == 'step':
                     result = env.step(data)
                 elif cmd == 'reset':
@@ -154,7 +162,7 @@ class GymProxy:
                     return
 
     @property
-    def unwrapped(self):
+    def unwrapped(self) -> "GymProxy":
         """
         Return self as the unwrapped env.
 
@@ -172,7 +180,7 @@ class GymProxy:
         """
         return self
 
-    def _recv(self):
+    def _recv(self) -> Any:
         """
         Receive a message from the worker, re-raising any remote exception.
 
@@ -193,7 +201,7 @@ class GymProxy:
         return msg
 
     @classmethod
-    def make(cls, env_name, *args, **kwargs):
+    def make(cls, env_name: str, *args: Any, **kwargs: Any) -> "GymProxy":
         # Create an instance of the proxy class and pass it the environment name and any additional arguments
         env = cls(env_name, *args, **kwargs)
         # Receive the observation and action spaces from the worker process and set them on the instance.
@@ -202,19 +210,21 @@ class GymProxy:
         # Return the instance of the proxy class
         return env
 
-    def step(self, action):
+    def step(self, action: Any) -> Tuple[Any, float, bool, bool, Mapping[str, Any]]:
         # Send a 'step' command to the worker process along with the action to take
         self.parent_conn.send(('step', action))
         # Receive and return the result of taking a step in the environment
         return self._recv()
 
-    def reset(self, seed=None, options=None):
+    def reset(self, seed: Optional[int] = None,
+              options: Optional[Mapping[str, Any]] = None,
+              ) -> Tuple[Any, Mapping[str, Any]]:
         # Send a 'reset' command to the worker process
         self.parent_conn.send(('reset', (seed, options)))
         # Receive and return the initial observation of the environment after resetting it
         return self._recv()
 
-    def close(self):
+    def close(self) -> None:
         # Idempotent close: safe to call multiple times and from __del__.
         if self._closed:
             return
@@ -230,16 +240,16 @@ class GymProxy:
             self.process.terminate()
             self.process.join(timeout=1.0)
 
-    def __enter__(self):
+    def __enter__(self) -> "GymProxy":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Optional[type], exc_val: Optional[BaseException], exc_tb: Optional[Any]) -> None:
         # Always close, even on exception. close() is idempotent so a later
         # __del__ won't double-tear-down the worker. Propagate the exception
         # by returning None (truthy return would swallow it).
         self.close()
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         # Send a 'get_attribute' command to the worker process along with the name of the attribute
         self.parent_conn.send(('get_attribute', name))
 
@@ -254,7 +264,7 @@ class GymProxy:
 
             # Define a new method that sends a 'call_method' command to the worker process
             # along with the name of the method and its arguments
-            def method(*args, **kwargs):
+            def method(*args: Any, **kwargs: Any) -> Any:
                 self.parent_conn.send(('call_method', (name, args, kwargs)))
 
                 # Receive and return the result of calling the method in the worker process
@@ -272,7 +282,7 @@ class GymProxy:
         else:
             return attr
 
-    def __del__(self):
+    def __del__(self) -> None:
         # Destructors must never raise. Swallow everything; close() already
         # absorbs the common cases (pipe closed, process gone) on its own.
         try:
