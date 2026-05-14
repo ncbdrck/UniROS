@@ -14,13 +14,11 @@ import sys
 import warnings
 from datetime import date
 
-# Build-log noise suppression (Codex REC-6).
-#
 # Local developer builds where TensorFlow / SB3 are installed (autodoc
 # doesn't reach for them in CI because they're mocked) pull in CUDA /
 # TensorRT log lines from the TensorFlow C++ runtime. Silence at the
 # source — must happen before TensorFlow is imported anywhere.
-# Hex 3 = ERROR-and-fatal-only; suppresses INFO, WARNING, and the
+# Level 3 = ERROR-and-fatal-only; suppresses INFO, WARNING, and the
 # "Could not load dynamic library libcudart" / TF-TRT messages.
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
 
