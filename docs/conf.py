@@ -155,6 +155,7 @@ autodoc_mock_imports = [
     "cv2", "cv_bridge", "image_transport",
     "interbotix_xs_modules", "interbotix_xs_msgs",
     "niryo_robot_python_ros_wrapper", "niryo_robot_msgs",
+    "niryo_robot_tools_commander",
     "ur_msgs", "ur_dashboard_msgs",
     "pyzed", "open3d",
 ]

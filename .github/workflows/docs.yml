@@ -12,31 +12,52 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Check out UniROS (with submodules)
+      # Check out UniROS WITHOUT submodules; we'll clone the framework
+      # repos individually below at branch refs matching the current run.
+      # The submodule gitlinks in UniROS point at older multiros/realros
+      # SHAs; using them here would render stale docstrings.
+      - name: Check out UniROS
         uses: actions/checkout@v4
         with:
           path: UniROS
-          submodules: recursive
 
-      # The framework packages outside UniROS live in separate repos.
-      # Clone them alongside so docs/conf.py's sys.path entries find them.
+      # The framework + application packages live in separate repos.
+      # Clone each at the SAME branch ref this workflow is running on
+      # (cleanup-2026 → cleanup-2026, gymnasium → gymnasium, etc.) so
+      # the docs render the matching versions of every package.
+      - name: Check out multiros
+        uses: actions/checkout@v4
+        with:
+          repository: ncbdrck/multiros
+          ref: ${{ github.head_ref || github.ref_name }}
+          path: multiros
+
+      - name: Check out realros
+        uses: actions/checkout@v4
+        with:
+          repository: ncbdrck/realros
+          ref: ${{ github.head_ref || github.ref_name }}
+          path: realros
+
       - name: Check out sb3_ros_support
         uses: actions/checkout@v4
         with:
           repository: ncbdrck/sb3_ros_support
-          ref: gymnasium
+          ref: ${{ github.head_ref || github.ref_name }}
           path: sb3_ros_support
 
       - name: Check out rl_environments
         uses: actions/checkout@v4
         with:
           repository: ncbdrck/rl_environments
+          ref: ${{ github.head_ref || github.ref_name }}
           path: rl_environments
 
       - name: Check out rl_training_validation
         uses: actions/checkout@v4
         with:
           repository: ncbdrck/rl_training_validation
+          ref: ${{ github.head_ref || github.ref_name }}
           path: rl_training_validation
 
       - uses: actions/setup-python@v5
