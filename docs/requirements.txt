@@ -1,0 +1,14 @@
+# Build-time deps for the unified ecosystem docs site on Read the Docs.
+# Runtime deps (rospy, message packages, KDL, MoveIt, torch, sb3) are
+# mocked via autodoc_mock_imports in conf.py — RTD doesn't need them.
+sphinx>=7.0
+sphinx-rtd-theme>=2.0
+sphinx-copybutton>=0.5
+myst-parser>=2.0
+
+# autodoc imports the four packages to read their docstrings, so they
+# need to be importable from PYTHONPATH. conf.py already adds the
+# src/ trees to sys.path; this lists only the pure-Python deps the
+# packages actually pull in at import time once ROS modules are mocked.
+gymnasium>=0.29
+numpy>=1.21

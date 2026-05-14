@@ -1,0 +1,61 @@
+name: docs
+
+on:
+  push:
+    branches: [main, master, gymnasium]
+  pull_request:
+    branches: [main, master, gymnasium]
+  workflow_dispatch: {}
+
+jobs:
+  sphinx-build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Check out UniROS (with submodules)
+        uses: actions/checkout@v4
+        with:
+          path: UniROS
+          submodules: recursive
+
+      # The framework packages outside UniROS live in separate repos.
+      # Clone them alongside so docs/conf.py's sys.path entries find them.
+      - name: Check out sb3_ros_support
+        uses: actions/checkout@v4
+        with:
+          repository: ncbdrck/sb3_ros_support
+          ref: gymnasium
+          path: sb3_ros_support
+
+      - name: Check out rl_environments
+        uses: actions/checkout@v4
+        with:
+          repository: ncbdrck/rl_environments
+          path: rl_environments
+
+      - name: Check out rl_training_validation
+        uses: actions/checkout@v4
+        with:
+          repository: ncbdrck/rl_training_validation
+          path: rl_training_validation
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install docs build deps
+        working-directory: UniROS
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r docs/requirements.txt
+
+      - name: Build HTML docs
+        working-directory: UniROS
+        run: sphinx-build -b html docs docs/_build/html
+
+      - name: Upload built docs as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-docs
+          path: UniROS/docs/_build/html
+          retention-days: 14
