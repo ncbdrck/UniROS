@@ -43,11 +43,24 @@ For docs work specifically:
 
 .. code-block:: bash
 
-   cd ~/catkin_ws/src/MultiROS_Real
+   cd ~/catkin_ws/src/UniROS
    pip install -r docs/requirements.txt
    sphinx-build -b html docs docs/_build/html
 
 Open ``docs/_build/html/index.html`` in a browser to preview.
+
+Before pushing docs changes, run the Python-code-block
+syntax check that CI runs:
+
+.. code-block:: bash
+
+   python scripts/check_python_code_blocks.py docs -v
+
+It compiles every ``.. code-block:: python`` snippet under
+``docs/``. ``SyntaxError`` here usually means a trailing ``...``
+inside a function call, a missing closing bracket, or a
+pseudo-code snippet that should have been tagged ``.. code-block::
+text`` (or any non-``python`` lexer) rather than ``python``.
 
 
 Commit conventions
