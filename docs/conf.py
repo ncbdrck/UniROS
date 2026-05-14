@@ -145,7 +145,7 @@ autodoc_mock_imports = [
     "moveit_commander", "moveit_msgs",
     "shape_msgs", "trajectory_msgs",
     "PyKDL", "kdl_parser_py", "urdf_parser_py",
-    "pykdl_utils", "hrl_geom",
+    "pykdl_utils", "hrl_geom", "trac_ik_python",
     "torch", "stable_baselines3",
     # rl_environments / rl_training_validation extras
     "cv2", "cv_bridge", "image_transport",

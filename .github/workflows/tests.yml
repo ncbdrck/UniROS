@@ -37,7 +37,9 @@ jobs:
           # can see them. Without --no-build-isolation, pip creates a clean
           # build sandbox and catkin_pkg won't be visible there.
           pip install setuptools wheel catkin_pkg pytest
-          pip install gymnasium gymnasium_robotics numpy
+          # Pin gymnasium to match the supported runtime. gymnasium 1.x
+          # removed wrapper attribute passthrough that the proxy depends on.
+          pip install "gymnasium==0.29.1" "gymnasium_robotics==1.2.4" numpy
           # Tests stub the rospy ecosystem in conftest.py; no ROS install needed.
           pip install -e . --no-build-isolation
 
