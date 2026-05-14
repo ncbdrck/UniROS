@@ -1,0 +1,48 @@
+name: tests
+
+on:
+  push:
+    branches: [main, master, gymnasium, cleanup-2026]
+  pull_request:
+    branches: [main, master, gymnasium, cleanup-2026]
+  workflow_dispatch: {}
+
+jobs:
+  pytest:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.8 = ROS Noetic's bundled Python (the supported runtime).
+        # 3.10 = forward-compat check.
+        # 3.12 is blocked on migrating setup.py from distutils to
+        # setuptools (distutils was removed from 3.12 stdlib). Re-enable
+        # once that migration lands.
+        python-version: ["3.8", "3.10"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package + test deps
+        working-directory: uniros
+        run: |
+          python -m pip install --upgrade pip
+          # The package's setup.py imports catkin_pkg + uses distutils (from
+          # stdlib up to 3.11). Install build deps in the OUTER env, then
+          # pip install -e with --no-build-isolation so the build subprocess
+          # can see them. Without --no-build-isolation, pip creates a clean
+          # build sandbox and catkin_pkg won't be visible there.
+          pip install setuptools wheel catkin_pkg pytest
+          # Pin gymnasium to match the supported runtime. gymnasium 1.x
+          # removed wrapper attribute passthrough that the proxy depends on.
+          pip install "gymnasium==0.29.1" "gymnasium_robotics==1.2.4" numpy
+          # Tests stub the rospy ecosystem in conftest.py; no ROS install needed.
+          pip install -e . --no-build-isolation
+
+      - name: Run pytest
+        working-directory: uniros
+        run: pytest tests/ -v

@@ -1,0 +1,82 @@
+name: docs
+
+on:
+  push:
+    branches: [main, master, gymnasium, cleanup-2026]
+  pull_request:
+    branches: [main, master, gymnasium, cleanup-2026]
+  workflow_dispatch: {}
+
+jobs:
+  sphinx-build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      # Check out UniROS WITHOUT submodules; we'll clone the framework
+      # repos individually below at branch refs matching the current run.
+      # The submodule gitlinks in UniROS point at older multiros/realros
+      # SHAs; using them here would render stale docstrings.
+      - name: Check out UniROS
+        uses: actions/checkout@v4
+        with:
+          path: UniROS
+
+      # The framework + application packages live in separate repos.
+      # Clone each at the SAME branch ref this workflow is running on
+      # (cleanup-2026 → cleanup-2026, gymnasium → gymnasium, etc.) so
+      # the docs render the matching versions of every package.
+      - name: Check out multiros
+        uses: actions/checkout@v4
+        with:
+          repository: ncbdrck/multiros
+          ref: ${{ github.head_ref || github.ref_name }}
+          path: multiros
+
+      - name: Check out realros
+        uses: actions/checkout@v4
+        with:
+          repository: ncbdrck/realros
+          ref: ${{ github.head_ref || github.ref_name }}
+          path: realros
+
+      - name: Check out sb3_ros_support
+        uses: actions/checkout@v4
+        with:
+          repository: ncbdrck/sb3_ros_support
+          ref: ${{ github.head_ref || github.ref_name }}
+          path: sb3_ros_support
+
+      - name: Check out rl_environments
+        uses: actions/checkout@v4
+        with:
+          repository: ncbdrck/rl_environments
+          ref: ${{ github.head_ref || github.ref_name }}
+          path: rl_environments
+
+      - name: Check out rl_training_validation
+        uses: actions/checkout@v4
+        with:
+          repository: ncbdrck/rl_training_validation
+          ref: ${{ github.head_ref || github.ref_name }}
+          path: rl_training_validation
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install docs build deps
+        working-directory: UniROS
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r docs/requirements.txt
+
+      - name: Build HTML docs (warnings-as-errors)
+        working-directory: UniROS
+        run: sphinx-build -W --keep-going -b html docs docs/_build/html
+
+      - name: Upload built docs as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-docs
+          path: UniROS/docs/_build/html
+          retention-days: 14
