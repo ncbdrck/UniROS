@@ -55,7 +55,7 @@ except ImportError:
 project = "UniROS ecosystem"
 author = "Jayasekara Kapukotuwa"
 copyright = f"{date.today().year}, {author}"
-release = "0.3.0"
+release = "0.3.1"
 version = "0.3"
 
 # ---------------------------------------------------------------- Source path

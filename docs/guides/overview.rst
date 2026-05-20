@@ -100,26 +100,49 @@ This buys two important properties:
 Lifecycle / cleanup
 -------------------
 
-The framework tracks the roscores and Gazebo processes each script
-spawns and tears them down on ``Ctrl+C`` or normal interpreter
-exit. The mechanism is layered:
+The framework tracks the roscores, Gazebo processes, and roslaunch /
+rosrun xterms each script spawns and tears them down on ``Ctrl+C`` or
+normal interpreter exit. The mechanism is layered:
 
 1. **Targeted signal handler.** ``register_managed_process`` (called
-   internally by ``launch_roscore`` / ``launch_gazebo``) installs a
+   internally by ``launch_roscore`` / ``launch_gazebo`` /
+   ``ros_launch_launcher`` / ``ros_node_launcher``) installs a
    SIGINT handler plus an ``atexit`` hook.
 2. **rospy shutdown hook.** Because ``rospy.init_node`` installs
    its own SIGINT handler that would otherwise overwrite ours,
    ``register_managed_process`` also registers via
    ``rospy.on_shutdown``. This is what guarantees cleanup runs in
    the common ``launch_gazebo; rospy.init_node; train`` flow.
-3. **Targeted ``pkill``.** Each tracked roscore is killed by its
-   port (``pkill -f "roscore -p <port>"``), and Gazebo's
-   gzserver / gzclient PIDs are captured at launch and SIGTERM'd
-   individually. Pre-existing ROS sessions on the host are not
-   affected.
+3. **Targeted ``pkill`` + process-group kill.** Each tracked
+   roscore is killed by its port (``pkill -f "roscore -p <port>"``),
+   and Gazebo's gzserver / gzclient PIDs are captured at launch and
+   SIGTERM'd individually. Pre-existing ROS sessions on the host
+   are not affected. As of v0.3.1, xterm wrappers from
+   ``ros_launch_launcher`` and ``ros_node_launcher`` are also
+   spawned as process-group leaders (``start_new_session=True``),
+   and cleanup auto-detects session leaders and uses
+   ``os.killpg(pgid, SIGTERM)`` to tear down the whole subtree
+   (e.g. ``xterm → roslaunch → move_group →
+   moveit_python_interface``) in one signal. Previously, terminating
+   only the xterm left grandchildren orphaned to init.
 4. **Escape hatch.** After cleanup runs, SIGINT is reset to
    ``SIG_DFL`` so a subsequent Ctrl+C kills the script immediately
    even if the training loop is stuck in a non-responsive C call.
+
+Reliable launch verification (v0.3.1)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``launch_roscore`` verifies the spawned roscore is reachable (TCP
+probe to the picked port) before returning. On failure, it retries
+with a fresh kernel-allocated port up to three times, then raises
+``RuntimeError``. Previously, a silent xterm/roscore failure (port
+collision, stale process, display issue) would still report
+"Roscore launched!" and set ``ROS_MASTER_URI`` at a phantom master.
+Downstream ``wait_for_service`` calls then blocked their full 30 s
+timeout, and ``roslaunch`` inside any subsequent ``launch_gazebo``
+xterm would start its own rosmaster on an auto-allocated port — so
+gzserver registered there and the env never found the ``/gazebo/*``
+services it expected.
 
 If you want to clobber every ROS / Gazebo session on the machine
 (across users / scripts), use the explicit host-wide helpers:
