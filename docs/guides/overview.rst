@@ -144,6 +144,19 @@ xterm would start its own rosmaster on an auto-allocated port — so
 gzserver registered there and the env never found the ``/gazebo/*``
 services it expected.
 
+Forceful worker subprocess reap (v0.3.2)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:meth:`uniros._proxy.GymProxy.close` now escalates to SIGKILL if
+the worker subprocess doesn't exit after the graceful close
+command + SIGTERM. Previously, a worker stuck in a non-responsive
+state (PyKDL C call, Gazebo XMLRPC retry, or its own
+``rospy.Timer`` thread spinning post-failure when ``gym.make``
+raised mid-init) would survive the parent's ``close()`` and
+linger as a CPU-burning zombie. The new last-resort SIGKILL
+guarantees the worker is reaped within ~7 seconds of any
+``proxy.close()`` call, regardless of what state the worker is in.
+
 If you want to clobber every ROS / Gazebo session on the machine
 (across users / scripts), use the explicit host-wide helpers:
 :func:`multiros.utils.ros_common.kill_all_host_ros_and_gazebo` or

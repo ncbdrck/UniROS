@@ -239,6 +239,17 @@ class GymProxy:
         if self.process.is_alive():
             self.process.terminate()
             self.process.join(timeout=1.0)
+        if self.process.is_alive():
+            # SIGTERM didn't take. Typical when the worker is blocked in a
+            # non-responsive C call (PyKDL, Gazebo XMLRPC retry, etc.) or
+            # its rospy.Timer thread is spinning post-failure — e.g. when
+            # gym.make raised mid-init but the env_loop timer was already
+            # registered, so sample_observation keeps firing on a half-
+            # constructed env and burns 100% CPU. Without SIGKILL the
+            # subprocess survives the parent's exit and lingers as a
+            # CPU-burning zombie. SIGKILL is the last-resort cleanup.
+            self.process.kill()
+            self.process.join(timeout=1.0)
 
     def __enter__(self) -> "GymProxy":
         return self
