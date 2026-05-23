@@ -1,5 +1,5 @@
 
-# UniROS: ROS-Based Reinforcement Learning Across Simulated and Real-world Robotics
+# UniROS: ROS-Based Reinforcement Learning Across Simulated and Real-World Robotics
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Documentation Status](https://readthedocs.org/projects/uniros/badge/?version=latest)](https://uniros.readthedocs.io/en/latest/?badge=latest)
@@ -59,24 +59,10 @@ See [`docker/README.md`](docker/README.md) and the
 for hardware passthrough, GPU notes, and bind-mounting a host
 workspace for active development.
 
-## Options for Setup (manual)
-There are two ways to set up this repository:
 
-1. **As an Integrated System (with Submodules):** Use this option if you do not have [MultiROS](https://github.com/ncbdrck/multiros) and [RealROS](https://github.com/ncbdrck/realros) already set up. UniROS will include both as submodules.
+## Manual Installation steps 
 
-2. **Using Existing MultiROS and RealROS:** Choose this if you already have these repositories cloned and set up independently. 
-
-## Pre-Setup: Check Existing Repositories
-Before proceeding with the setup, determine if you already have multiros and realros on your system. The [check_repos.sh](#script-check_repossh) snippet below this README does that automatically — copy its contents into a file called `check_repos.sh` in your home directory (or anywhere on `$PATH`), make it executable (`chmod +x check_repos.sh`), then run it:
-
-```bash
-./check_repos.sh
-```
-
-If the script finds the repositories, follow the instructions for using existing repositories. If not, proceed with the integrated system setup.
-
-## 1. Setup as an Integrated System
-If you do not have `MultiROS` and `RealROS`, or you wish to use them as submodules of `UniROS`, follow these steps:
+Follow these steps:
 
 ```bash
 cd ~/catkin_ws/src
@@ -94,7 +80,7 @@ sudo apt-get install python3-pip
 cd ~/catkin_ws/src/uniros/uniros/
 pip3 install -r requirements.txt
 
-# set the branch of the submodules to gymnasium
+# Set the branch of the submodules to gymnasium
 cd ~/catkin_ws/src/uniros/multiros
 git checkout gymnasium
 git pull
@@ -102,7 +88,7 @@ cd ~/catkin_ws/src/uniros/realros
 git checkout gymnasium
 git pull
 
-# before building the workspace, install the dependencies for MultiROS and RealROS
+# Before building the workspace, install the dependencies for MultiROS and RealROS
 # You can find the dependencies in the respective repositories
 # Not installing the dependencies may cause build errors
 
@@ -115,33 +101,11 @@ source devel/setup.bash
 
 **Note:** MultiROS and RealROS have their own dependencies. Please follow the instructions in their respective repositories to install the dependencies.
 
-## 2. Setup Using Existing MultiROS and RealROS
-If you have existing clones of `multiros` and `realros`, follow these instructions:
-
-```bash
-cd ~/catkin_ws/src
-git clone -b gymnasium  https://github.com/ncbdrck/uniros
-
-# continue with the installation as above
-```
-**Note:** Make sure that the branches of `multiros` and `realros` are set to `gymnasium`. If not, you can switch to the `gymnasium` branch by running the following commands:
-
-```bash
-cd ~/catkin_ws/src/multiros  # or the path to your multiros repository
-git checkout gymnasium  # switch to the gymnasium branch
-git pull  # to update the repository
-
-cd ~/catkin_ws/src/realros  # or the path to your realros repository
-git checkout gymnasium  # switch to the gymnasium branch
-git pull  # to update the repository
-```
-
-
 ## Usage
 
 - Once you have set up UniROS, which includes MultiROS and RealROS, you can use each package to create reinforcement learning environments for your robots. 
 - You can follow the instructions in the respective repositories to create your own environments. Use the provided [examples](https://github.com/ncbdrck/uniros_support_materials) as a starting point.
-- Then, register the created environment with gymnasium.  
+- Then, register the created environment with Gymnasium.  
 
     ```python
     # gymnasium registration - example
@@ -159,43 +123,6 @@ git pull  # to update the repository
     import uniros as gym
     env = gym.make('MyEnv-v0')
     ```
-
-## Script: `check_repos.sh`
-Below is the `check_repos.sh` script. Save it in your `home` directory and run it to check if `multiros` and `realros` are already downloaded.
-
-```bash
-#!/bin/bash
-
-# Function to check if a directory is a Git repository
-is_git_repo() {
-    if git -C "$1" rev-parse 2>/dev/null; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-# Directories where multiros and realros might exist.
-# Adjust these to match your workspace.
-MULTIROS_DIR="$HOME/catkin_ws/src/multiros"
-REALROS_DIR="$HOME/catkin_ws/src/realros"
-
-# Check multiros
-if [ -d "$MULTIROS_DIR" ] && is_git_repo "$MULTIROS_DIR"; then
-    echo "multiros repository found at $MULTIROS_DIR"
-else
-    echo "multiros repository not found (looked in $MULTIROS_DIR)"
-fi
-
-# Check realros
-if [ -d "$REALROS_DIR" ] && is_git_repo "$REALROS_DIR"; then
-    echo "realros repository found at $REALROS_DIR"
-else
-    echo "realros repository not found (looked in $REALROS_DIR)"
-fi
-```
-
-Update `MULTIROS_DIR` and `REALROS_DIR` to match where these repositories live in your workspace. The typical layout for a ROS catkin workspace is `~/<workspace_name>_ws/src/<repo_name>/`.
 
 ## Documentation
 
