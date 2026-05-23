@@ -10,8 +10,7 @@ The image installs everything `install_uniros_stack.sh` installs:
 ROS Noetic, the four framework packages (UniROS, MultiROS, RealROS,
 sb3_ros_support), the two application packages (rl_environments,
 rl_training_validation), all four robots' description-extras helpers,
-robot vendor packages (Interbotix RX200 + VX300S, Niryo Ned2, UR5e
-+ Robotiq), and rl_envs_cube_tracker.
+robot vendor packages (Interbotix RX200 + VX300S, Niryo Ned2, UR5e + Robotiq), and rl_envs_cube_tracker.
 
 The container runs as a non-root `uniros` user (UID/GID configurable
 at build time, defaults to the host's) so bind-mounted host workspaces
