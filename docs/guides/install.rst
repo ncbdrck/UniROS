@@ -316,90 +316,22 @@ Option C — Docker
 -----------------
 
 If your host can't run Ubuntu 20.04 natively (modern OEM laptop,
-Ubuntu 22.04 / 24.04 distro, RTX 50-series GPU with no Ubuntu 20.04
-driver, etc.), the same stack is available as a Docker image. The
-image bakes the full installer output into an Ubuntu 20.04 + ROS
-Noetic container and ships with helper scripts for headless and
-GUI use.
-
-Requirements:
-
-* Linux host with `Docker <https://docs.docker.com/engine/install/ubuntu/>`_
-  installed.
-* Optional: `NVIDIA Container Toolkit <https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html>`_
-  for GPU-accelerated Gazebo rendering or PyTorch inside the
-  container.
-* Optional: `rocker <https://github.com/osrf/rocker>`_ for GUI mode
-  (``sudo apt install python3-rocker``).
-
-Build the image:
+Ubuntu 22.04 / 24.04, a GPU + driver stack with no Ubuntu 20.04
+support, or Windows with WSL2), the same stack is available as a
+Docker image:
 
 .. code-block:: bash
 
    git clone -b gymnasium https://github.com/ncbdrck/UniROS.git
    cd UniROS/docker
-   ./build.sh                  # tags 'uniros:noetic'
+   ./build.sh         # 30–60 min first build; tags 'uniros:noetic'
+   ./run.sh           # headless
+   ./run_gui.sh       # GUI (Gazebo, RViz) via rocker
 
-First build takes 30–60 minutes (clones every robot vendor repo,
-pip-installs SB3 / PyTorch, builds the catkin workspace). The
-script copies the parent's ``install_uniros_stack.sh`` into the
-build context so there's a single install source of truth.
-
-The container runs as a non-root ``uniros`` user. ``build.sh``
-auto-detects your host UID/GID (``--build-arg USER_UID=$(id -u)
-USER_GID=$(id -g)``) so bind-mounted host workspaces end up with
-correct host-side file ownership. Override with ``-u UID -g GID``
-if needed.
-
-Headless run (no Gazebo / RViz window — good for training scripts
-or for piping data over ``--network=host`` to a learner on the host):
-
-.. code-block:: bash
-
-   ./run.sh
-
-GUI run (Gazebo / RViz windows on host display, via rocker):
-
-.. code-block:: bash
-
-   ./run_gui.sh           # auto-detects NVIDIA; --no-gpu for software rendering
-
-Active development with a host workspace bind-mount:
-
-.. code-block:: bash
-
-   ./run.sh -w ~/uniros_ws       # /home/uniros/uniros_ws inside == ~/uniros_ws on host
-   ./run_gui.sh -w ~/uniros_ws
-
-Hardware passthrough:
-
-* **Network-attached robots** (Niryo Ned2, UR5e) work out of the box —
-  ``run.sh`` enables ``--network=host`` by default so any
-  ``ROS_MASTER_URI`` you set inside the container reaches the robot's
-  onboard rosmaster.
-* **USB-attached robots** (Interbotix RX200 / VX300S via U2D2) need
-  two host-side steps:
-
-  #. Install the Interbotix udev rules on the **host**, not in the
-     container (the installer skips them when it detects
-     ``UNIROS_INSTALL_IN_DOCKER=1``):
-
-     .. code-block:: bash
-
-        sudo cp ~/uniros_ws/src/interbotix_ros_core/interbotix_ros_xseries/interbotix_xs_sdk/99-interbotix-udev.rules \
-                /etc/udev/rules.d/
-        sudo udevadm control --reload-rules && sudo udevadm trigger
-
-  #. Edit ``docker/run.sh`` (or ``run_gui.sh``) and uncomment the
-     ``--device=/dev/ttyDXL:/dev/ttyDXL`` line.
-
-For the full Docker reference (Windows / WSL2 notes, custom tags,
-GPU caveats, multi-rosmaster patterns), see ``UniROS/docker/README.md``.
-
-The same ``docker/`` tree (canonical in UniROS, byte-identical
-copies in MultiROS, RealROS, ``sb3_ros_support``, ``rl_environments``,
-``rl_training_validation``) is shipped in every ecosystem repo so
-you can build the image from whichever repo you cloned first.
+See :doc:`docker` for the full Docker reference — when to use it,
+hardware passthrough (USB and network), GPU, bind-mounting a host
+workspace for active development, troubleshooting, and the roadmap
+for in-progress features.
 
 
 Next step

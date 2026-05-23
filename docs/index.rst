@@ -47,6 +47,7 @@ the applications as ready-made examples.
    :caption: Get started
 
    guides/install
+   guides/docker
    guides/quickstart
    guides/overview
 
