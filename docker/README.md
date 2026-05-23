@@ -13,6 +13,10 @@ rl_training_validation), all four robots' description-extras helpers,
 robot vendor packages (Interbotix RX200 + VX300S, Niryo Ned2, UR5e
 + Robotiq), and rl_envs_cube_tracker.
 
+The container runs as a non-root `uniros` user (UID/GID configurable
+at build time, defaults to the host's) so bind-mounted host workspaces
+don't end up with root-owned `build/` and `devel/` files.
+
 ## Requirements
 
 - Linux host (Ubuntu 20.04 / 22.04 / 24.04 tested) with
@@ -36,16 +40,18 @@ From this directory:
 ./build.sh
 ```
 
-The script copies the parent's `install_uniros_stack.sh` into the
-build context, runs `docker build -t uniros:noetic .`, then cleans up.
-First build takes 30–60 minutes depending on network speed (it
-clones every robot vendor repo and pip-installs SB3 / PyTorch);
-subsequent builds with no changes are fast.
+`build.sh` auto-detects your host UID/GID and passes them as
+`--build-arg USER_UID=$(id -u) --build-arg USER_GID=$(id -g)`, so the
+non-root `uniros` user inside the container has the same UID as you
+on the host. First build takes 30–60 minutes depending on network
+speed (it clones every robot vendor repo and pip-installs SB3 /
+PyTorch); subsequent builds with no changes are fast.
 
-Custom tag:
+Custom tag or explicit UID:
 
 ```bash
 ./build.sh -t myname/uniros:dev
+./build.sh -u 1001 -g 1001          # different UID/GID
 ```
 
 ## Run
@@ -56,10 +62,10 @@ Custom tag:
 ./run.sh
 ```
 
-You land in `bash` inside the container with `/root/uniros_ws`
-sourced. `rospy`, `roscore`, and headless Gazebo all work. Use this
-for training scripts or for piping data over `--network=host` to a
-learner on the host.
+You land in `bash` as the `uniros` user inside the container with
+`/home/uniros/uniros_ws` sourced. `rospy`, `roscore`, and headless
+Gazebo all work. Use this for training scripts or for piping data
+over `--network=host` to a learner on the host.
 
 **With GUI** (Gazebo, RViz windows on host display, via rocker):
 
@@ -68,7 +74,9 @@ learner on the host.
 ```
 
 Auto-detects NVIDIA. Pass `--no-gpu` to force software rendering
-(Intel / AMD / llvmpipe).
+(Intel / AMD / llvmpipe). rocker's `--user` flag layers your current
+host UID at runtime, so file ownership stays clean even if you
+didn't rebuild after your host UID changed.
 
 ## Hardware passthrough
 
@@ -89,9 +97,9 @@ relevant lines:
 ## Active development (bind-mount your host workspace)
 
 Both run scripts accept `-w` to bind-mount your host workspace over
-`/root/uniros_ws` in the container. Useful when you're editing source
-files on the host (in your IDE) and want the container to see the
-changes immediately:
+`/home/uniros/uniros_ws` in the container. Useful when you're
+editing source files on the host (in your IDE) and want the
+container to see the changes immediately:
 
 ```bash
 ./run.sh -w ~/uniros_ws
@@ -101,7 +109,8 @@ changes immediately:
 The host workspace must be a fully bootstrapped catkin workspace
 (`install_uniros_stack.sh -p ~/uniros_ws` on a Linux 20.04 host, or
 inside another container). `catkin build` from inside the container
-writes to `~/uniros_ws/build` and `~/uniros_ws/devel` on the host.
+writes to `~/uniros_ws/build` and `~/uniros_ws/devel` on the host,
+owned by the host user (because the container UID matches).
 
 ## Versions
 

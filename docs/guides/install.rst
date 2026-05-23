@@ -345,6 +345,12 @@ pip-installs SB3 / PyTorch, builds the catkin workspace). The
 script copies the parent's ``install_uniros_stack.sh`` into the
 build context so there's a single install source of truth.
 
+The container runs as a non-root ``uniros`` user. ``build.sh``
+auto-detects your host UID/GID (``--build-arg USER_UID=$(id -u)
+USER_GID=$(id -g)``) so bind-mounted host workspaces end up with
+correct host-side file ownership. Override with ``-u UID -g GID``
+if needed.
+
 Headless run (no Gazebo / RViz window — good for training scripts
 or for piping data over ``--network=host`` to a learner on the host):
 
@@ -362,7 +368,7 @@ Active development with a host workspace bind-mount:
 
 .. code-block:: bash
 
-   ./run.sh -w ~/uniros_ws       # /root/uniros_ws inside == ~/uniros_ws on host
+   ./run.sh -w ~/uniros_ws       # /home/uniros/uniros_ws inside == ~/uniros_ws on host
    ./run_gui.sh -w ~/uniros_ws
 
 Hardware passthrough:

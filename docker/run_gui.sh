@@ -12,6 +12,11 @@
 #     sudo apt install python3-rocker            # Ubuntu 20.04 / 22.04
 #     # or: pip3 install --user rocker
 #
+# The container is built with a non-root uniros user; rocker's --user
+# flag layers a runtime user matching your *current* host UID over the
+# baked one, so file ownership stays clean even if you didn't rebuild
+# the image when your UID changed.
+#
 # USAGE:
 #   ./run_gui.sh                     # X11; auto-detects NVIDIA
 #   ./run_gui.sh -t mytag            # different image tag
@@ -54,7 +59,7 @@ EOF
     exit 1
 fi
 
-ROCKER_ARGS=( --x11 --network=host --ipc=host --name uniros-gui )
+ROCKER_ARGS=( --x11 --user --network=host --ipc=host --name uniros-gui )
 
 if $USE_GPU; then
     if command -v nvidia-smi >/dev/null 2>&1; then
@@ -68,12 +73,12 @@ fi
 
 if [[ -n "$MOUNT_WS" ]]; then
     MOUNT_WS_ABS="$(cd "$MOUNT_WS" && pwd)"
-    ROCKER_ARGS+=( --volume "$MOUNT_WS_ABS:/root/uniros_ws" )
-    echo "Mounting host workspace $MOUNT_WS_ABS at /root/uniros_ws"
+    ROCKER_ARGS+=( --volume "$MOUNT_WS_ABS:/home/uniros/uniros_ws" )
+    echo "Mounting host workspace $MOUNT_WS_ABS at /home/uniros/uniros_ws"
 fi
 
 # Hardware passthrough — add what you need. rocker forwards extra
-# `--device` / `--privileged` arguments straight through to docker run.
+# `--devices` / `--privileged` arguments straight through to docker run.
 #
 #   ROCKER_ARGS+=( --devices /dev/ttyDXL )      # Interbotix U2D2
 #   ROCKER_ARGS+=( --devices /dev/ttyUSB0 )     # generic USB serial
