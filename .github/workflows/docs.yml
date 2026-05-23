@@ -73,9 +73,14 @@ jobs:
           ref: ${{ (github.head_ref || github.ref_name) == 'gymnasium' && 'main' || (github.head_ref || github.ref_name) }}
           path: rl_training_validation
 
+      # Python 3.8 matches the project's actual runtime (ROS Noetic
+      # ships only on Ubuntu 20.04 / Python 3.8). Running docs CI on a
+      # newer interpreter pulled in Sphinx 8.x + docutils 0.21, which
+      # is stricter about edge-case rST in legacy docstrings that
+      # users on 3.8 / Sphinx 7.x never see — pure false positives.
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.8"
 
       - name: Install docs build deps
         working-directory: UniROS
