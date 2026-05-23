@@ -19,7 +19,9 @@ FROM nvidia/cuda:12.9.2-devel-ubuntu20.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TZ=Etc/UTC
-ENV TZ=${TZ}
+ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND} \
+    DEBCONF_NONINTERACTIVE_SEEN=true \
+    TZ=${TZ}
 
 # Make long ROS / Ubuntu apt transactions less fragile in Docker builds.
 # This helps with transient mirror/network errors such as failed downloads
@@ -62,11 +64,15 @@ ENV LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8
 
 # Create the install user with passwordless sudo. The installer uses
-# sudo for system-level steps (apt, rosdep init); NOPASSWD keeps it
-# non-interactive during the image build.
+# sudo for system-level steps (apt, rosdep init). Preserve the noninteractive
+# debconf environment through sudo so package configuration cannot block
+# Docker builds with prompts such as keyboard layout selection.
 RUN groupadd --gid ${USER_GID} ${USERNAME} \
     && useradd --uid ${USER_UID} --gid ${USER_GID} -m -s /bin/bash ${USERNAME} \
-    && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
+    && { \
+        echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL"; \
+        echo 'Defaults env_keep += "DEBIAN_FRONTEND DEBCONF_NONINTERACTIVE_SEEN TZ"'; \
+    } > /etc/sudoers.d/${USERNAME} \
     && chmod 0440 /etc/sudoers.d/${USERNAME}
 
 USER ${USERNAME}
