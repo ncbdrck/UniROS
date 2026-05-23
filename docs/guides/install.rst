@@ -15,10 +15,17 @@ The ecosystem targets **ROS Noetic** on **Ubuntu 20.04** with
    migration — that's out of scope for the current codebase but
    tracked as future work.
 
-The fastest path is the bootstrap script ``install_uniros_stack.sh``,
-which installs ROS Noetic, the framework, all six application repos,
-and every supported robot's vendor packages in one go. The manual
-path below is for users who want to step through each piece.
+There are three install paths:
+
+* **Option A — bootstrap script** on a native Ubuntu 20.04 host.
+  Fastest for users who can install Ubuntu 20.04 directly.
+* **Option B — manual install** on a native Ubuntu 20.04 host. Same
+  end state as A; useful for users who want to step through each piece.
+* **Option C — Docker image** on any Linux host (Ubuntu 20.04 / 22.04
+  / 24.04, plus WSL2 on Windows). The right choice if your machine
+  ships with Ubuntu 22.04+ or has a GPU / driver combo that has no
+  Ubuntu 20.04 support — common on modern OEM laptops and on RTX
+  50-series workstations.
 
 
 Option A — bootstrap script (recommended for a fresh machine)
@@ -303,6 +310,90 @@ bootstrap script installs) and for per-camera-per-robot extrinsic
 calibration instructions.
 
 Then rebuild the workspace and source it again.
+
+
+Option C — Docker
+-----------------
+
+If your host can't run Ubuntu 20.04 natively (modern OEM laptop,
+Ubuntu 22.04 / 24.04 distro, RTX 50-series GPU with no Ubuntu 20.04
+driver, etc.), the same stack is available as a Docker image. The
+image bakes the full installer output into an Ubuntu 20.04 + ROS
+Noetic container and ships with helper scripts for headless and
+GUI use.
+
+Requirements:
+
+* Linux host with `Docker <https://docs.docker.com/engine/install/ubuntu/>`_
+  installed.
+* Optional: `NVIDIA Container Toolkit <https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html>`_
+  for GPU-accelerated Gazebo rendering or PyTorch inside the
+  container.
+* Optional: `rocker <https://github.com/osrf/rocker>`_ for GUI mode
+  (``sudo apt install python3-rocker``).
+
+Build the image:
+
+.. code-block:: bash
+
+   git clone -b gymnasium https://github.com/ncbdrck/UniROS.git
+   cd UniROS/docker
+   ./build.sh                  # tags 'uniros:noetic'
+
+First build takes 30–60 minutes (clones every robot vendor repo,
+pip-installs SB3 / PyTorch, builds the catkin workspace). The
+script copies the parent's ``install_uniros_stack.sh`` into the
+build context so there's a single install source of truth.
+
+Headless run (no Gazebo / RViz window — good for training scripts
+or for piping data over ``--network=host`` to a learner on the host):
+
+.. code-block:: bash
+
+   ./run.sh
+
+GUI run (Gazebo / RViz windows on host display, via rocker):
+
+.. code-block:: bash
+
+   ./run_gui.sh           # auto-detects NVIDIA; --no-gpu for software rendering
+
+Active development with a host workspace bind-mount:
+
+.. code-block:: bash
+
+   ./run.sh -w ~/uniros_ws       # /root/uniros_ws inside == ~/uniros_ws on host
+   ./run_gui.sh -w ~/uniros_ws
+
+Hardware passthrough:
+
+* **Network-attached robots** (Niryo Ned2, UR5e) work out of the box —
+  ``run.sh`` enables ``--network=host`` by default so any
+  ``ROS_MASTER_URI`` you set inside the container reaches the robot's
+  onboard rosmaster.
+* **USB-attached robots** (Interbotix RX200 / VX300S via U2D2) need
+  two host-side steps:
+
+  #. Install the Interbotix udev rules on the **host**, not in the
+     container (the installer skips them when it detects
+     ``UNIROS_INSTALL_IN_DOCKER=1``):
+
+     .. code-block:: bash
+
+        sudo cp ~/uniros_ws/src/interbotix_ros_core/interbotix_ros_xseries/interbotix_xs_sdk/99-interbotix-udev.rules \
+                /etc/udev/rules.d/
+        sudo udevadm control --reload-rules && sudo udevadm trigger
+
+  #. Edit ``docker/run.sh`` (or ``run_gui.sh``) and uncomment the
+     ``--device=/dev/ttyDXL:/dev/ttyDXL`` line.
+
+For the full Docker reference (Windows / WSL2 notes, custom tags,
+GPU caveats, multi-rosmaster patterns), see ``UniROS/docker/README.md``.
+
+The same ``docker/`` tree (canonical in UniROS, byte-identical
+copies in MultiROS, RealROS, ``sb3_ros_support``, ``rl_environments``,
+``rl_training_validation``) is shipped in every ecosystem repo so
+you can build the image from whichever repo you cloned first.
 
 
 Next step

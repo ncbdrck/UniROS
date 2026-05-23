@@ -40,6 +40,25 @@ distros.
 The manual setup paths below still work if you'd rather install
 piece-by-piece.
 
+## Don't have Ubuntu 20.04? Use Docker
+
+If your host is Ubuntu 22.04 / 24.04, has a GPU with no Ubuntu 20.04
+driver (RTX 50-series, etc.), or is Windows with WSL2, the same
+stack ships as a Docker image:
+
+```bash
+git clone -b gymnasium https://github.com/ncbdrck/UniROS.git
+cd UniROS/docker
+./build.sh         # tags 'uniros:noetic'
+./run.sh           # headless
+./run_gui.sh       # GUI (Gazebo, RViz) via rocker
+```
+
+See [`docker/README.md`](docker/README.md) and the
+[install guide's Docker section](https://uniros.readthedocs.io/en/latest/guides/install.html#option-c-docker)
+for hardware passthrough, GPU notes, and bind-mounting a host
+workspace for active development.
+
 ## Options for Setup (manual)
 There are two ways to set up this repository:
 

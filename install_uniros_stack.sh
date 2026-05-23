@@ -301,8 +301,12 @@ install_rl_environments() {
         "$WORKSPACE_PATH/src/interbotix_ros_toolboxes/interbotix_xs_toolbox/CATKIN_IGNORE" \
         "$WORKSPACE_PATH/src/interbotix_ros_toolboxes/interbotix_common_toolbox/interbotix_moveit_interface/CATKIN_IGNORE"
     do [[ -f "$f" ]] && rm -f "$f" && info "  removed $(basename "$f") under $(dirname "$f")"; done
-    # Interbotix USB perms.
-    if [[ -f "$WORKSPACE_PATH/src/interbotix_ros_core/interbotix_ros_xseries/interbotix_xs_sdk/99-interbotix-udev.rules" ]]; then
+    # Interbotix USB perms. Skipped in container builds (no udevd, no
+    # /etc/udev access) — install these on the *host* if you'll be
+    # passing /dev/ttyDXL through to the container.
+    if [[ "${UNIROS_INSTALL_IN_DOCKER:-0}" == "1" ]]; then
+        info "  skipping Interbotix udev rules (in-container build; install on host instead)."
+    elif [[ -f "$WORKSPACE_PATH/src/interbotix_ros_core/interbotix_ros_xseries/interbotix_xs_sdk/99-interbotix-udev.rules" ]]; then
         if [[ ! -f /etc/udev/rules.d/99-interbotix-udev.rules ]]; then
             sudo cp "$WORKSPACE_PATH/src/interbotix_ros_core/interbotix_ros_xseries/interbotix_xs_sdk/99-interbotix-udev.rules" \
                     /etc/udev/rules.d/ \

@@ -1,0 +1,5 @@
+# build.sh stages the canonical install_uniros_stack.sh from the
+# parent dir into this directory as part of the docker build context,
+# then cleans it up on exit. If a build is interrupted, the staged
+# copy can be left behind — ignore it so it never gets committed.
+install_uniros_stack.sh
