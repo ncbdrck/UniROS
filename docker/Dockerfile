@@ -1,4 +1,4 @@
-# UniROS RL stack — Ubuntu 20.04 + ROS Noetic + framework + 4 robots.
+# UniROS RL stack — CUDA Ubuntu 20.04 + ROS Noetic + framework + 4 robots.
 #
 # Build (from the directory containing this Dockerfile):
 #   ./build.sh                          # uses your host UID/GID by default
@@ -15,11 +15,17 @@
 # sb3_ros_support, rl_environments, rl_training_validation) so users
 # can build it from whichever repo they cloned first.
 
-FROM ubuntu:20.04
+FROM nvidia/cuda:12.9.2-devel-ubuntu20.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TZ=Etc/UTC
 ENV TZ=${TZ}
+
+# Make long ROS / Ubuntu apt transactions less fragile in Docker builds.
+# This helps with transient mirror/network errors such as failed downloads
+# of large dependency sets while installing ros-noetic-desktop-full.
+RUN printf 'Acquire::Retries "5";\nAcquire::http::Timeout "60";\nAcquire::https::Timeout "60";\n' \
+        > /etc/apt/apt.conf.d/80-retries
 
 # The container runs as a non-root user so that bind-mounted host
 # workspaces don't end up with root-owned build/ and devel/ files.
@@ -31,7 +37,8 @@ ARG USER_GID=1000
 
 # Minimal system deps the installer itself needs to bootstrap. Everything
 # else (ROS Noetic, framework packages, vendor robot packages, pip deps)
-# is pulled in by install_uniros_stack.sh.
+# is pulled in by install_uniros_stack.sh. Terminator is included for an
+# easier multi-terminal workflow when running the GUI container.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
@@ -44,6 +51,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         python3-pip \
         ncurses-bin \
+        terminator \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
     && dpkg-reconfigure --frontend noninteractive tzdata \
     && locale-gen en_US.UTF-8 \
