@@ -54,7 +54,7 @@ the applications as ready-made examples.
    :maxdepth: 2
    :caption: Environments
 
-   guides/envs_ready_made
+   envs/index
    guides/env_templates
    guides/env_creation_sim
    guides/env_creation_real
