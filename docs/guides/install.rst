@@ -69,7 +69,8 @@ What the script installs:
   plus the shared ``common-sensors``.
 * Robot vendor packages: Interbotix (RX200 + VX300S), Niryo Ned2
   (``ned_ros``), Universal Robots (``universal_robot`` +
-  ``ur_robot_driver`` + ``ur_calibration``), and the
+  ``ur_robot_driver`` + ``ur_calibration`` +
+  ``ur5e_robotiq_85_moveit_config``), and the
   ``filesmuggler/robotiq`` driver for the UR5e gripper.
 * ``rl_envs_cube_tracker`` — the AprilTag-based ``/cube_pose``
   publisher used by real push and pick-and-place envs.
@@ -289,7 +290,13 @@ automatically. If you cloned manually, see the script's
    cd ~/uniros_ws/src
    git clone -b noetic-devel https://github.com/ros-industrial/universal_robot.git
    git clone https://github.com/filesmuggler/robotiq.git
+   git clone https://github.com/ncbdrck/ur5e_robotiq_85_moveit_config.git
    git clone https://github.com/ncbdrck/ur5e_description_extras.git
+
+``ur5e_description_extras`` depends on all three of the above
+(``ur_e_description`` from ``universal_robot``, ``robotiq_description``
+from the Robotiq fork, and ``ur5e_robotiq_85_moveit_config``); none
+are in the Ubuntu / ROS apt mirror so they must be source-cloned.
 
 The UR5e real launch wrapper (``ur5e_real.launch``) is still pending
 in ``ur5e_description_extras``; sim is fully supported.

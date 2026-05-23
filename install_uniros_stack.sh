@@ -328,13 +328,16 @@ install_rl_environments() {
         sudo apt install -y sqlite3 ffmpeg || warn "Niryo system deps (sqlite3, ffmpeg) install had issues"
     fi
 
-    # Universal Robots UR5e + Robotiq gripper.
-    info "Cloning UR5e + Robotiq packages..."
+    # Universal Robots UR5e + Robotiq gripper + the MoveIt config that
+    # ur5e_description_extras's launch files include.
+    info "Cloning UR5e + Robotiq + MoveIt config packages..."
     clone_if_missing "https://github.com/ros-industrial/universal_robot.git" \
                      "$WORKSPACE_PATH/src/universal_robot" -b "$ROS_DISTRO-devel" \
         || clone_if_missing "https://github.com/ros-industrial/universal_robot.git" \
                             "$WORKSPACE_PATH/src/universal_robot"
     clone_if_missing "https://github.com/filesmuggler/robotiq.git" "$WORKSPACE_PATH/src/robotiq"
+    clone_if_missing "https://github.com/ncbdrck/ur5e_robotiq_85_moveit_config.git" \
+                     "$WORKSPACE_PATH/src/ur5e_robotiq_85_moveit_config"
     sudo apt install -y ros-noetic-ur-robot-driver ros-noetic-ur-calibration \
         || warn "UR robot driver install had issues (real-hardware optional)"
     ok "rl_environments + vendor packages cloned."
