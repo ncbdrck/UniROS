@@ -15,7 +15,32 @@ and evaluating the robots in both simulated and real-world environments.
 ## Overview
 This repository, UniROS, is designed to integrate two separate repositories, [MultiROS](https://github.com/ncbdrck/multiros) and [RealROS](https://github.com/ncbdrck/realros), giving users the flexibility to use them either as standalone modules or as integrated parts of UniROS.
 
-## Options for Setup
+## Easiest install: one-shot script
+
+If you're starting fresh on Ubuntu 20.04, run the bootstrap installer.
+It installs ROS Noetic, UniROS (with MultiROS + RealROS as
+submodules), sb3_ros_support, rl_environments (with all 4 robots'
+vendor packages + supporting description-extras + cube tracker), and
+rl_training_validation. Interactive by default; pass `-y` for an
+unattended install.
+
+```bash
+git clone -b gymnasium https://github.com/ncbdrck/UniROS.git /tmp/uniros_bootstrap
+bash /tmp/uniros_bootstrap/install_uniros_stack.sh                # interactive
+bash /tmp/uniros_bootstrap/install_uniros_stack.sh -y             # unattended
+bash /tmp/uniros_bootstrap/install_uniros_stack.sh -p ~/my_ws -y  # custom path
+```
+
+The script asks once whether to install all components or pick per-
+component (ROS / UniROS / sb3_ros_support / rl_environments /
+rl_training_validation). It refuses to run on anything other than
+Ubuntu 20.04 because ROS Noetic doesn't officially support other
+distros.
+
+The manual setup paths below still work if you'd rather install
+piece-by-piece.
+
+## Options for Setup (manual)
 There are two ways to set up this repository:
 
 1. **As an Integrated System (with Submodules):** Use this option if you do not have [MultiROS](https://github.com/ncbdrck/multiros) and [RealROS](https://github.com/ncbdrck/realros) already set up. UniROS will include both as submodules.
