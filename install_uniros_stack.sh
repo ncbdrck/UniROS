@@ -43,6 +43,18 @@ info() { echo -e "${BLU}${BOLD}[INFO ]${NORM}${OFF} $*"; }
 ok()   { echo -e "${GRN}${BOLD}[ OK  ]${NORM}${OFF} $*"; }
 fail() { err "$*"; exit 1; }
 
+# apt occasionally fails in long Docker/ROS transactions because one mirror
+# fetch flakes out. Keep all apt invocations consistent and retry downloads.
+APT_RETRY_OPTS=(-o Acquire::Retries=5 -o Acquire::http::Timeout=60 -o Acquire::https::Timeout=60)
+
+apt_update() {
+    sudo apt-get update "${APT_RETRY_OPTS[@]}"
+}
+
+apt_install() {
+    sudo apt-get install -y --fix-missing "${APT_RETRY_OPTS[@]}" "$@"
+}
+
 # ---------- args -----------------------------------------------------------
 ASSUME_YES=false
 WORKSPACE_PATH=""
@@ -174,18 +186,18 @@ install_ros_noetic() {
     fi
     sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' \
         || fail "Failed to add ROS apt repo"
-    sudo apt install -y curl gnupg2 || fail "Failed to install curl/gnupg2"
+    apt_install curl gnupg2 || fail "Failed to install curl/gnupg2"
     curl -sSL 'https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc' | sudo apt-key add - \
         || fail "Failed to add ROS apt key"
-    sudo apt update || fail "apt update failed"
-    sudo apt install -y ros-noetic-desktop-full || fail "Failed to install ros-noetic-desktop-full"
+    apt_update || fail "apt update failed"
+    apt_install ros-noetic-desktop-full || fail "Failed to install ros-noetic-desktop-full"
     if ! grep -q "source /opt/ros/noetic/setup.bash" "$HOME/.bashrc"; then
         echo "source /opt/ros/noetic/setup.bash" >> "$HOME/.bashrc"
     fi
     # shellcheck disable=SC1091
     source /opt/ros/noetic/setup.bash
-    sudo apt install -y python3-rosdep python3-rosinstall python3-rosinstall-generator \
-                        python3-wstool python3-catkin-tools build-essential \
+    apt_install python3-rosdep python3-rosinstall python3-rosinstall-generator \
+                python3-wstool python3-catkin-tools build-essential \
         || fail "Failed to install ROS build tools"
     if [[ ! -f /etc/ros/rosdep/sources.list.d/20-default.list ]]; then
         sudo rosdep init || warn "rosdep init failed (already initialised?)"
@@ -197,8 +209,9 @@ install_ros_noetic() {
 # ---------- step: system dependencies -------------------------------------
 install_system_deps() {
     info "Installing system dependencies (xterm, MoveIt, pykdl, ...)"
-    sudo apt install -y \
+    apt_install \
         xterm \
+        terminator \
         ros-noetic-moveit \
         python3-pykdl \
         ros-noetic-kdl-parser-py \
@@ -325,7 +338,7 @@ install_rl_environments() {
             pip3 install --user -r "$WORKSPACE_PATH/src/ned_ros/requirements.txt" \
                 || warn "ned_ros requirements.txt install had issues"
         fi
-        sudo apt install -y sqlite3 ffmpeg || warn "Niryo system deps (sqlite3, ffmpeg) install had issues"
+        apt_install sqlite3 ffmpeg || warn "Niryo system deps (sqlite3, ffmpeg) install had issues"
     fi
 
     # Universal Robots UR5e + Robotiq gripper + the MoveIt config that
@@ -338,7 +351,7 @@ install_rl_environments() {
     clone_if_missing "https://github.com/filesmuggler/robotiq.git" "$WORKSPACE_PATH/src/robotiq"
     clone_if_missing "https://github.com/ncbdrck/ur5e_robotiq_85_moveit_config.git" \
                      "$WORKSPACE_PATH/src/ur5e_robotiq_85_moveit_config"
-    sudo apt install -y ros-noetic-ur-robot-driver ros-noetic-ur-calibration \
+    apt_install ros-noetic-ur-robot-driver ros-noetic-ur-calibration \
         || warn "UR robot driver install had issues (real-hardware optional)"
     ok "rl_environments + vendor packages cloned."
 }
