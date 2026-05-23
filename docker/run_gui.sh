@@ -12,6 +12,11 @@
 #     sudo apt install python3-rocker            # Ubuntu 20.04 / 22.04
 #     # or: pip3 install --user rocker
 #
+# GPU passthrough requires NVIDIA drivers on the host plus NVIDIA
+# Container Toolkit. If nvidia-smi is available, this script asks rocker
+# to add NVIDIA support automatically. The CUDA toolkit is available
+# inside the image because the Dockerfile uses an nvidia/cuda base image.
+#
 # The container is built with a non-root uniros user; rocker's --user
 # flag layers a runtime user matching your *current* host UID over the
 # baked one, so file ownership stays clean even if you didn't rebuild
@@ -64,9 +69,11 @@ ROCKER_ARGS=( --x11 --user --network=host --ipc=host --name uniros-gui )
 if $USE_GPU; then
     if command -v nvidia-smi >/dev/null 2>&1; then
         ROCKER_ARGS+=( --nvidia )
+        echo "NVIDIA GPU passthrough enabled through rocker --nvidia."
     else
         echo "Note: nvidia-smi not found on host; running without --nvidia."
         echo "      Gazebo/RViz will use software rendering (slower)."
+        echo "      Install NVIDIA drivers + NVIDIA Container Toolkit for GPU use."
         echo "      Pass --no-gpu to silence this message."
     fi
 fi
