@@ -133,10 +133,37 @@ edit, not a code rewrite), :doc:`/api/sb3_ros_support` adds:
        env.close()
 
 Working examples live under
-``rl_training_validation/src/rl_training_validation/rx200/reach/``:
+``rl_training_validation/src/rl_training_validation/<robot>/<task>/``
+for every supported robot/task pair:
 
-* ``rx200_reach_train_sim.py`` / ``rx200_reach_validate_sim.py``
-* ``rx200_reach_train_real.py`` / ``rx200_reach_validate_real.py``
+.. list-table::
+   :widths: 12 18 35 35
+   :header-rows: 1
+
+   * - Robot
+     - Task
+     - Sim scripts
+     - Real scripts
+   * - RX200
+     - reach / push / pnp
+     - ``<task>_train_sim.py`` / ``<task>_validate_sim.py``
+     - ``<task>_train_real.py`` / ``<task>_validate_real.py``
+   * - Ned2
+     - reach / push / pnp
+     - ``<task>_train_sim.py`` / ``<task>_validate_sim.py``
+     - ``<task>_train_real.py`` / ``<task>_validate_real.py``
+   * - VX300S
+     - reach / push / pnp
+     - ``<task>_train_sim.py`` / ``<task>_validate_sim.py``
+     - ``<task>_train_real.py`` / ``<task>_validate_real.py``
+   * - UR5e
+     - reach / push / pnp
+     - ``<task>_train_sim.py`` / ``<task>_validate_sim.py``
+     - ``<task>_train_real.py`` / ``<task>_validate_real.py``
+
+Each script accepts the same set of CLI flags
+(``--gazebo-gui``, ``--allow-real-robot-motion``, etc.); see
+``rl_training_validation/README.md`` for the canonical inventory.
 
 See :doc:`/api/sb3_ros_support` for the full algorithm list, and
 :doc:`/api/rl_training_validation` for the working scripts.
@@ -231,12 +258,20 @@ Configuration via YAML (sb3_ros_support)
 
 When using ``sb3_ros_support``, hyperparameters live in a YAML file
 under any ROS package you control. The working examples ship under
-``rl_training_validation/config/``:
+``rl_training_validation/config/`` and cover all four robots ×
+three tasks × standard/goal variants (34 files total):
 
-* ``rx200_reacher_sac.yaml`` / ``rx200_reacher_sac_goal.yaml``
-* ``rx200_reacher_td3.yaml`` / ``rx200_reacher_td3_goal.yaml``
-* ``rx200_push_td3.yaml`` / ``rx200_push_td3_goal.yaml``
-* ``multi_task_td3.yaml`` / ``multi_task_td3_goal.yaml``
+* **Reach** — SAC and TD3 (standard + goal) for every robot:
+  ``<robot>_reacher_sac.yaml``, ``<robot>_reacher_sac_goal.yaml``,
+  ``<robot>_reacher_td3.yaml``, ``<robot>_reacher_td3_goal.yaml``.
+* **Push** — TD3 (standard + goal) for every robot:
+  ``<robot>_push_td3.yaml``, ``<robot>_push_td3_goal.yaml``.
+* **PnP** — TD3 (standard + goal) for every robot:
+  ``<robot>_pnp_td3.yaml``, ``<robot>_pnp_td3_goal.yaml``.
+* **Multi-task** — ``multi_task_td3.yaml`` / ``multi_task_td3_goal.yaml``
+  for joint sim+real training (see :doc:`joint_sim_real_training`).
+
+``<robot>`` is one of ``rx200``, ``ned2``, ``vx300s``, ``ur5e``.
 
 A typical file:
 

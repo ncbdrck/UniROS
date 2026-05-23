@@ -15,63 +15,66 @@ The ecosystem targets **ROS Noetic** on **Ubuntu 20.04** with
    migration — that's out of scope for the current codebase but
    tracked as future work.
 
-The fastest installation path is to use the bootstrap script
-shipped with ``rl_environments`` — it installs ROS, the framework
-core, and the robot drivers in one go. The manual path below is
-for users who want to understand every step or who already have
-parts of the stack installed.
+The fastest path is the bootstrap script ``install_uniros_stack.sh``,
+which installs ROS Noetic, the framework, all six application repos,
+and every supported robot's vendor packages in one go. The manual
+path below is for users who want to step through each piece.
 
 
 Option A — bootstrap script (recommended for a fresh machine)
 -------------------------------------------------------------
 
-If you don't yet have a catkin workspace, the bootstrap script in
-``rl_environments`` installs the heavy parts in one go:
+Identical copies of the bootstrap script live in every ecosystem
+repo (UniROS, MultiROS, RealROS, ``sb3_ros_support``,
+``rl_environments``, ``rl_training_validation``); run it from
+whichever repo you cloned first.
 
 .. code-block:: bash
 
-   cd ~
-   git clone https://github.com/ncbdrck/rl_environments.git
-   cd rl_environments
+   # Grab the canonical copy without cloning the whole UniROS tree
+   curl -fsSL https://raw.githubusercontent.com/ncbdrck/UniROS/gymnasium/install_uniros_stack.sh \
+        -o /tmp/install_uniros_stack.sh
+   chmod +x /tmp/install_uniros_stack.sh
 
-   chmod +x install_ros_rl.sh
-   ./install_ros_rl.sh            # interactive
-   # or
-   ./install_ros_rl.sh -n         # non-interactive
+   # Interactive: prompts before each component, default workspace ~/uniros_ws
+   bash /tmp/install_uniros_stack.sh
+
+   # Non-interactive: assume yes to every prompt
+   bash /tmp/install_uniros_stack.sh -y
+
+   # Custom workspace location (path must end in ``_ws/`` or already
+   # contain a ``src/`` subfolder)
+   bash /tmp/install_uniros_stack.sh -p ~/my_ws -y
 
 What the script installs:
 
-* ROS Noetic (if missing)
-* UniROS (recursively, pulling MultiROS + RealROS as submodules)
-* The robot drivers — RX200 (Interbotix), Ned2 (Niryo), UR5
-  (Universal Robots)
-* ``hrl-kdl`` (Noetic-compatible pykdl_utils + hrl_geom)
+* ROS Noetic (``ros-noetic-desktop-full``) and dependencies
+  (xterm, MoveIt, PyKDL, ``hrl-kdl`` for ``pykdl_utils`` /
+  ``hrl_geom``, trac_ik, urdfdom-py).
+* A catkin workspace (default ``~/uniros_ws``) and ``catkin_tools``.
+* The four framework packages: ``UniROS`` (recursively, pulling
+  ``multiros`` and ``realros`` as submodules) and ``sb3_ros_support``.
+* The two application packages: ``rl_environments`` and
+  ``rl_training_validation``.
+* Per-robot description-extras helpers:
+  ``reactorx200_description``, ``niryo_ned2_description_extras``,
+  ``viperx300s_description``, ``ur5e_description_extras``,
+  plus the shared ``common-sensors``.
+* Robot vendor packages: Interbotix (RX200 + VX300S), Niryo Ned2
+  (``ned_ros``), Universal Robots (``universal_robot`` +
+  ``ur_robot_driver`` + ``ur_calibration``), and the
+  ``filesmuggler/robotiq`` driver for the UR5e gripper.
+* ``rl_envs_cube_tracker`` — the AprilTag-based ``/cube_pose``
+  publisher used by real push and pick-and-place envs.
+* RealSense D405 SDK (Kinect v2 and ZED 2 drivers stay user-provided
+  because they need vendor SDKs).
 
-What the script does **not** install:
+The script is **idempotent**: existing ROS installs, existing repo
+clones, and pip packages that are already up to date are skipped.
 
-* ``sb3_ros_support`` — the SB3 wrapper. Needed if you want to
-  train with the convenience layer or use ``rl_training_validation``.
-* ``rl_environments`` itself into the catkin workspace — the
-  script clones it, but you'll typically want it sitting alongside
-  the other packages.
-* ``rl_training_validation`` — the working training scripts.
-
-After the script finishes, run the following to pick up the rest:
-
-.. code-block:: bash
-
-   cd ~/catkin_ws/src
-   git clone -b gymnasium https://github.com/ncbdrck/sb3_ros_support.git
-   git clone https://github.com/ncbdrck/rl_training_validation.git
-   # And, if not already there:
-   git clone https://github.com/ncbdrck/rl_environments.git
-
-   cd ~/catkin_ws
-   rosdep install --from-paths src --ignore-src -r -y
-   catkin build
-   source devel/setup.bash
-
-Then jump to :doc:`quickstart`.
+After the script finishes, it prints next-step commands (listing
+envs, smoke-training the RX200 reacher). Jump to :doc:`quickstart`
+for the same flow with extra explanation.
 
 
 Option B — manual installation
@@ -92,8 +95,8 @@ Option B — manual installation
    echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
    source ~/.bashrc
 
-   sudo apt install python3-rosdep python3-rosinstall \\
-                    python3-rosinstall-generator python3-wstool \\
+   sudo apt install python3-rosdep python3-rosinstall \
+                    python3-rosinstall-generator python3-wstool \
                     build-essential
    sudo rosdep init
    rosdep update
@@ -106,10 +109,10 @@ Option B — manual installation
 
    sudo apt-get install python3-catkin-tools
 
-   mkdir -p ~/catkin_ws/src
-   cd ~/catkin_ws/
+   mkdir -p ~/uniros_ws/src
+   cd ~/uniros_ws/
    catkin build
-   echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
+   echo "source ~/uniros_ws/devel/setup.bash" >> ~/.bashrc
    source ~/.bashrc
 
 
@@ -121,12 +124,12 @@ planning), and PyKDL / kdl_parser_py / trac_ik (kinematics):
 
 .. code-block:: bash
 
-   sudo apt install \\
-       xterm \\
-       ros-noetic-moveit \\
-       python3-pykdl \\
-       ros-noetic-kdl-parser-py \\
-       ros-noetic-trac-ik \\
+   sudo apt install \
+       xterm \
+       ros-noetic-moveit \
+       python3-pykdl \
+       ros-noetic-kdl-parser-py \
+       ros-noetic-trac-ik \
        ros-noetic-urdfdom-py
 
 The ``Kinematics_pykdl`` helper relies on a Noetic-compatible fork
@@ -134,14 +137,14 @@ of ``pykdl_utils`` and ``hrl_geom``:
 
 .. code-block:: bash
 
-   cd ~/catkin_ws/src
+   cd ~/uniros_ws/src
    git clone https://github.com/ncbdrck/hrl-kdl.git
 
-   cd ~/catkin_ws/src/hrl-kdl/pykdl_utils
+   cd ~/uniros_ws/src/hrl-kdl/pykdl_utils
    python3 setup.py build
    sudo python3 setup.py install
 
-   cd ~/catkin_ws/src/hrl-kdl/hrl_geom
+   cd ~/uniros_ws/src/hrl-kdl/hrl_geom
    python3 setup.py build
    sudo python3 setup.py install
 
@@ -154,19 +157,13 @@ recursive clone gives you all three packages:
 
 .. code-block:: bash
 
-   cd ~/catkin_ws/src
-   git clone --recurse-submodules -b gymnasium https://github.com/ncbdrck/uniros
+   cd ~/uniros_ws/src
+   git clone --recurse-submodules -b gymnasium https://github.com/ncbdrck/UniROS
 
    # Make sure every submodule is on the gymnasium branch
-   cd ~/catkin_ws/src/uniros
+   cd ~/uniros_ws/src/UniROS
    git checkout gymnasium
    git submodule update --remote --recursive
-
-   cd ~/catkin_ws/src/uniros/multiros
-   git checkout gymnasium && git pull
-
-   cd ~/catkin_ws/src/uniros/realros
-   git checkout gymnasium && git pull
 
 If you already have MultiROS or RealROS cloned standalone, skip
 ``--recurse-submodules`` and use the existing clones; just be sure
@@ -191,12 +188,15 @@ they're on the ``gymnasium`` branch.
 
    The framework and the docs work the same in both layouts.
 
-Clone the SB3 support package (separate repo, not a submodule):
+Clone ``sb3_ros_support`` and the two application packages
+(separate repos, not submodules):
 
 .. code-block:: bash
 
-   cd ~/catkin_ws/src
+   cd ~/uniros_ws/src
    git clone -b gymnasium https://github.com/ncbdrck/sb3_ros_support.git
+   git clone https://github.com/ncbdrck/rl_environments.git
+   git clone https://github.com/ncbdrck/rl_training_validation.git
 
 
 5. Python dependencies
@@ -206,10 +206,11 @@ Clone the SB3 support package (separate repo, not a submodule):
 
    sudo apt-get install python3-pip
 
-   pip3 install -r ~/catkin_ws/src/uniros/uniros/requirements.txt
-   pip3 install -r ~/catkin_ws/src/uniros/multiros/requirements.txt
-   pip3 install -r ~/catkin_ws/src/uniros/realros/requirements.txt
-   pip3 install -r ~/catkin_ws/src/sb3_ros_support/requirements.txt
+   pip3 install -r ~/uniros_ws/src/UniROS/uniros/requirements.txt
+   pip3 install -r ~/uniros_ws/src/UniROS/multiros/requirements.txt
+   pip3 install -r ~/uniros_ws/src/UniROS/realros/requirements.txt
+   pip3 install -r ~/uniros_ws/src/sb3_ros_support/requirements.txt
+   pip3 install -r ~/uniros_ws/src/rl_environments/requirements.txt
 
 
 6. Build the workspace
@@ -217,7 +218,7 @@ Clone the SB3 support package (separate repo, not a submodule):
 
 .. code-block:: bash
 
-   cd ~/catkin_ws
+   cd ~/uniros_ws
    rosdep install --from-paths src --ignore-src -r -y
    catkin build
    source devel/setup.bash
@@ -228,62 +229,78 @@ Clone the SB3 support package (separate repo, not a submodule):
 
 .. code-block:: bash
 
-   python3 -c "import uniros, multiros, realros, sb3_ros_support; print('OK')"
-
-
-Optional: ready-made envs + training scripts
---------------------------------------------
-
-To get pre-built RX200 / Ned2 / UR5 envs and SB3 training scripts:
-
-.. code-block:: bash
-
-   cd ~/catkin_ws/src
-   git clone https://github.com/ncbdrck/rl_environments.git
-   git clone https://github.com/ncbdrck/rl_training_validation.git
-
-   cd ~/catkin_ws
-   rosdep install --from-paths src --ignore-src -r -y
-   catkin build
-   source devel/setup.bash
-
-See :doc:`envs_ready_made` for what's currently working out of the
-box, and :doc:`training` for how to train one.
+   python3 -c "import uniros, multiros, realros, sb3_ros_support, rl_environments; print('OK')"
 
 
 Robot-specific extras
 ---------------------
 
-The pre-built envs need the corresponding manufacturer's ROS
-packages. Install the ones you'll use:
+The pre-built envs need each robot's vendor ROS packages plus the
+per-robot description-extras helper repo (table / cube / Kinect
+wrap; ``install_uniros_stack.sh`` clones all of them in one pass).
+Install the ones you'll use:
 
-**Trossen ReactorX-200** (Interbotix arms)
+**Trossen ReactorX-200 + ViperX-300S** (Interbotix arms)
 
 .. code-block:: bash
 
-   curl 'https://raw.githubusercontent.com/Interbotix/interbotix_ros_manipulators/main/interbotix_ros_xsarms/install/amd64/xsarm_amd64_install.sh' > xsarm_amd64_install.sh
-   chmod +x xsarm_amd64_install.sh
-   ./xsarm_amd64_install.sh -d noetic -p ~/catkin_ws
+   cd ~/uniros_ws/src
+   git clone -b noetic https://github.com/Interbotix/interbotix_ros_core.git
+   git clone -b noetic https://github.com/Interbotix/interbotix_ros_manipulators.git
+   git clone -b noetic https://github.com/Interbotix/interbotix_ros_toolboxes.git
+
+   # Description-extras helpers (table / cube / Kinect wraps)
+   git clone https://github.com/ncbdrck/reactorx200_description.git
+   git clone https://github.com/ncbdrck/viperx300s_description.git
+   git clone https://github.com/ncbdrck/common-sensors.git
+
+The Interbotix repos ship CATKIN_IGNORE markers in some subfolders
+the framework needs; ``install_uniros_stack.sh`` removes them
+automatically. If you cloned manually, see the script's
+``install_rl_environments`` step for the list of files to delete.
 
 **Niryo Ned 2**
 
 .. code-block:: bash
 
-   cd ~/catkin_ws/src
+   cd ~/uniros_ws/src
    git clone https://github.com/NiryoRobotics/ned_ros.git
    cd ned_ros
    git submodule update --init ros-foxglove-bridge
    pip install -r requirements.txt
    sudo apt install sqlite3 ffmpeg build-essential -y
 
-**Universal Robots UR5**
+   cd ~/uniros_ws/src
+   git clone https://github.com/ncbdrck/niryo_ned2_description_extras.git
+
+**Universal Robots UR5e + Robotiq 2F-85**
 
 .. code-block:: bash
 
-   sudo apt install ros-noetic-universal-robots
-   # or build from source
-   cd ~/catkin_ws/src
+   sudo apt install ros-noetic-ur-robot-driver ros-noetic-ur-calibration
+
+   cd ~/uniros_ws/src
    git clone -b noetic-devel https://github.com/ros-industrial/universal_robot.git
+   git clone https://github.com/filesmuggler/robotiq.git
+   git clone https://github.com/ncbdrck/ur5e_description_extras.git
+
+The UR5e real launch wrapper (``ur5e_real.launch``) is still pending
+in ``ur5e_description_extras``; sim is fully supported.
+
+**Real push / pick-and-place envs (any robot)**
+
+Push and PnP real envs subscribe to ``/cube_pose`` for the cube's
+pose. The publisher lives in a separate helper repo:
+
+.. code-block:: bash
+
+   cd ~/uniros_ws/src
+   git clone https://github.com/ncbdrck/rl_envs_cube_tracker.git
+
+See ``rl_envs_cube_tracker/README.md`` for camera-driver setup
+(Kinect v2, ZED 2, and D405 are supported; D405 is the only one the
+bootstrap script installs) and for per-camera-per-robot extrinsic
+calibration instructions.
 
 Then rebuild the workspace and source it again.
 

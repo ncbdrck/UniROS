@@ -27,17 +27,30 @@ Platform lifecycle
 Coverage of the example environments
 ------------------------------------
 
-* The most thoroughly exercised path in the ecosystem is the
-  **RX200 reach** task in both simulation and real-world, with
-  the joint sim+real workflow used for the paper experiments.
-  Other robots / tasks are less mature; see :doc:`envs_ready_made`
-  for the precise inventory.
-* **Niryo Ned2** has source files for sim robot envs but no
-  registered gymnasium IDs and no training scripts.
-* **Universal Robots UR5** directories are placeholders.
+The pre-built env matrix covers four robots × three tasks × sim/real
+× standard/goal variants — 54 registered Gymnasium IDs in total.
+See :doc:`/envs/index` for the full inventory.
+
+Maturity varies across that matrix:
+
+* **RX200 reach** (sim and real) is the most exercised path; it is
+  the joint sim+real workflow used for the paper experiments and
+  the only env validated end-to-end on physical hardware so far.
+* **RX200 push / PnP**, **Ned2 reach / push / PnP**, **VX300S
+  reach / push / PnP**, and **UR5e reach / push / PnP** sim envs
+  are registered and have training/validation scripts. They have
+  been exercised in Gazebo but not all of them have been published
+  with trained policies.
+* **Real envs** are registered for every robot/task above, but
+  hardware bring-up beyond RX200 reach is still in progress.
+  Treat the real registry as "implemented in code", not
+  "validated on hardware".
+* **UR5e real** specifically depends on a
+  ``ur5e_description_extras/launch/ur5e_real.launch`` wrapper that
+  is still pending — see the UR5e pages under :doc:`/envs/index`.
 * Variants exist for joint-position vs end-effector action spaces
-  and for vision-based observations (Kinect v2, ZED 2), but
-  per-variant training/evaluation has not been published.
+  and for vision-based observations (Kinect v2, ZED 2, RealSense
+  D405), but per-variant training/evaluation has not been published.
 
 
 Real-robot training

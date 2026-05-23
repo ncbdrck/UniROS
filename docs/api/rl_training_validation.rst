@@ -7,6 +7,16 @@ Training and validation scripts for the pre-built environments in
 
 For the user-facing training guide see :doc:`/guides/training`.
 
+.. note::
+
+   This page covers the reach training/validation scripts across
+   all four supported robots plus the multi-task learning script.
+   The push and pick-and-place scripts share docstring patterns
+   with their underlying task envs and are intentionally omitted
+   while those docstrings are tidied — the scripts themselves are
+   shipped and runnable from the source tree. See
+   :doc:`/guides/training` for the user-facing inventory.
+
 
 .. contents::
    :local:
@@ -23,6 +33,18 @@ Top-level package
 
 Utilities
 ---------
+
+env_safety
+~~~~~~~~~~
+
+Real-robot motion consent gate
+(``--allow-real-robot-motion``), env-ID parsing helpers, and the
+registry-introspection helpers used by the ``scripts/`` smoke tools.
+
+.. automodule:: rl_training_validation.utils.env_safety
+   :members:
+   :show-inheritance:
+
 
 MultiTaskEnv
 ~~~~~~~~~~~~
@@ -46,8 +68,8 @@ reward recomputation per sub-env via ``info["task_id"]``.
    :show-inheritance:
 
 
-RX200 reach scripts
--------------------
+RX200 — Reach
+-------------
 
 Sim training / validation
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,8 +84,8 @@ Sim training / validation
    :show-inheritance:
 
 
-Real-hardware training / validation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Real training / validation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: rl_training_validation.rx200.reach.rx200_reach_train_real
    :members:
@@ -71,6 +93,93 @@ Real-hardware training / validation
 
 
 .. automodule:: rl_training_validation.rx200.reach.rx200_reach_validate_real
+   :members:
+   :show-inheritance:
+
+
+Niryo Ned2 — Reach
+------------------
+
+Sim training / validation
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: rl_training_validation.ned2.reach.ned2_reach_train_sim
+   :members:
+   :show-inheritance:
+
+
+.. automodule:: rl_training_validation.ned2.reach.ned2_reach_validate_sim
+   :members:
+   :show-inheritance:
+
+
+Real training / validation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: rl_training_validation.ned2.reach.ned2_reach_train_real
+   :members:
+   :show-inheritance:
+
+
+.. automodule:: rl_training_validation.ned2.reach.ned2_reach_validate_real
+   :members:
+   :show-inheritance:
+
+
+Trossen VX300S — Reach
+----------------------
+
+Sim training / validation
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: rl_training_validation.vx300s.reach.vx300s_reach_train_sim
+   :members:
+   :show-inheritance:
+
+
+.. automodule:: rl_training_validation.vx300s.reach.vx300s_reach_validate_sim
+   :members:
+   :show-inheritance:
+
+
+Real training / validation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: rl_training_validation.vx300s.reach.vx300s_reach_train_real
+   :members:
+   :show-inheritance:
+
+
+.. automodule:: rl_training_validation.vx300s.reach.vx300s_reach_validate_real
+   :members:
+   :show-inheritance:
+
+
+Universal Robots UR5e — Reach
+-----------------------------
+
+Sim training / validation
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: rl_training_validation.ur5e.reach.ur5e_reach_train_sim
+   :members:
+   :show-inheritance:
+
+
+.. automodule:: rl_training_validation.ur5e.reach.ur5e_reach_validate_sim
+   :members:
+   :show-inheritance:
+
+
+Real training / validation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: rl_training_validation.ur5e.reach.ur5e_reach_train_real
+   :members:
+   :show-inheritance:
+
+
+.. automodule:: rl_training_validation.ur5e.reach.ur5e_reach_validate_real
    :members:
    :show-inheritance:
 
