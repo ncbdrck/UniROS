@@ -177,6 +177,7 @@ autodoc_mock_imports = [
     "rospy.service",
     "visualization_msgs", "geometry_msgs", "std_msgs",
     "sensor_msgs", "controller_manager_msgs",
+    "control_msgs",
     "gazebo_msgs", "std_srvs", "nav_msgs",
     "tf", "tf2_ros", "tf2_geometry_msgs", "tf.transformations",
     "actionlib", "actionlib_msgs",
