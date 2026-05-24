@@ -11,32 +11,73 @@
 # default (overridable via -u / -g) so that bind-mounted workspaces
 # end up with correct host-side file ownership.
 #
+# TWO BUILD VARIANTS
+#
+#   Default (CUDA runtime, ~16 GB):
+#     ./build.sh
+#       FROM nvidia/cuda:12.9.2-runtime-ubuntu20.04
+#       tag  uniros:noetic
+#       PyTorch / TensorFlow / any CUDA-aware Python lib can use the
+#       GPU from inside the container.
+#
+#   Slim (no CUDA in image, ~12 GB):
+#     ./build.sh --slim
+#       FROM osrf/ros:noetic-desktop-full-focal
+#       tag  uniros:noetic-slim
+#       Smaller download. No CUDA libs baked in; in-container training
+#       falls back to CPU unless you bring your own GPU PyTorch wheel.
+#       Picks up host NVIDIA driver libs via rocker --nvidia at runtime
+#       (Gazebo / RViz still get hardware-accelerated GL).
+#
 # USAGE:
-#   ./build.sh                          # tag 'uniros:noetic', UID/GID = host
-#   ./build.sh -t myname:tag            # custom tag
+#   ./build.sh                          # default; tag 'uniros:noetic'
+#   ./build.sh --slim                   # slim variant; tag 'uniros:noetic-slim'
+#   ./build.sh -t myname:tag            # custom tag (combine with --slim too)
 #   ./build.sh -u 1001 -g 1001          # explicit UID/GID
 #   ./build.sh -h                       # help
 
 set -euo pipefail
 
-TAG="uniros:noetic"
+# Image variants
+DEFAULT_BASE="nvidia/cuda:12.9.2-runtime-ubuntu20.04"
+SLIM_BASE="osrf/ros:noetic-desktop-full-focal"
+DEFAULT_TAG="uniros:noetic"
+SLIM_TAG="uniros:noetic-slim"
+
+# Defaults
+SLIM=false
+TAG=""
 USER_UID="$(id -u)"
 USER_GID="$(id -g)"
+CUSTOM_TAG=false
 
 usage() {
     sed -n '2,/^$/p' "$0"
     exit "${1:-0}"
 }
 
-while getopts 'ht:u:g:' opt; do
-    case "$opt" in
-        h) usage 0;;
-        t) TAG="$OPTARG";;
-        u) USER_UID="$OPTARG";;
-        g) USER_GID="$OPTARG";;
-        *) usage 1;;
+# Hand-rolled arg loop so we can support both short (-t -u -g -h)
+# and long (--slim) flags.
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)  usage 0;;
+        --slim)     SLIM=true; shift;;
+        -t)         TAG="$2"; CUSTOM_TAG=true; shift 2;;
+        -u)         USER_UID="$2"; shift 2;;
+        -g)         USER_GID="$2"; shift 2;;
+        --)         shift; break;;
+        -*)         echo "Unknown flag: $1" >&2; usage 1;;
+        *)          echo "Unexpected arg: $1" >&2; usage 1;;
     esac
 done
+
+if $SLIM; then
+    BASE_IMAGE="$SLIM_BASE"
+    [[ "$CUSTOM_TAG" == false ]] && TAG="$SLIM_TAG"
+else
+    BASE_IMAGE="$DEFAULT_BASE"
+    [[ "$CUSTOM_TAG" == false ]] && TAG="$DEFAULT_TAG"
+fi
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 PARENT="$(dirname "$HERE")"
@@ -55,8 +96,11 @@ trap cleanup EXIT
 
 cp "$INSTALLER_SRC" "$INSTALLER_DST"
 
-echo "Building $TAG from $HERE (USER_UID=$USER_UID USER_GID=$USER_GID) ..."
+echo "Building $TAG from $HERE"
+echo "  BASE_IMAGE=$BASE_IMAGE"
+echo "  USER_UID=$USER_UID  USER_GID=$USER_GID"
 docker build \
+    --build-arg "BASE_IMAGE=$BASE_IMAGE" \
     --build-arg "USER_UID=$USER_UID" \
     --build-arg "USER_GID=$USER_GID" \
     -t "$TAG" \
@@ -64,5 +108,5 @@ docker build \
 
 echo
 echo "Built: $TAG"
-echo "Run headless:   $HERE/run.sh"
-echo "Run with GUI:   $HERE/run_gui.sh"
+echo "Run headless:   $HERE/run.sh -t $TAG"
+echo "Run with GUI:   $HERE/run_gui.sh -t $TAG"

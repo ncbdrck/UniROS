@@ -181,16 +181,25 @@ resolve_workspace() {
 install_ros_noetic() {
     info "[1/5] ROS Noetic..."
     if dpkg-query -W -f='${Status}' ros-noetic-desktop-full 2>/dev/null | grep -q "ok installed"; then
-        ok "ros-noetic-desktop-full already installed."
-        return 0
+        ok "ros-noetic-desktop-full already installed (pre-installed base image)."
+        # apt cache may be empty (e.g. osrf-base Docker images strip
+        # /var/lib/apt/lists/* at build time). Refresh before the
+        # catkin-tools / rosdep installs below.
+        apt_update || warn "apt update failed (network?)"
+    else
+        sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' \
+            || fail "Failed to add ROS apt repo"
+        apt_install curl gnupg2 || fail "Failed to install curl/gnupg2"
+        curl -sSL 'https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc' | sudo apt-key add - \
+            || fail "Failed to add ROS apt key"
+        apt_update || fail "apt update failed"
+        apt_install ros-noetic-desktop-full || fail "Failed to install ros-noetic-desktop-full"
     fi
-    sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' \
-        || fail "Failed to add ROS apt repo"
-    apt_install curl gnupg2 || fail "Failed to install curl/gnupg2"
-    curl -sSL 'https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc' | sudo apt-key add - \
-        || fail "Failed to add ROS apt key"
-    apt_update || fail "apt update failed"
-    apt_install ros-noetic-desktop-full || fail "Failed to install ros-noetic-desktop-full"
+
+    # Post-ROS setup. Runs in both branches: fresh installs need it
+    # obviously, and pre-installed base images (osrf/ros) need it
+    # because they don't ship catkin-tools, and their rosdep cache is
+    # root-owned while we run as a non-root user inside the container.
     if ! grep -q "source /opt/ros/noetic/setup.bash" "$HOME/.bashrc"; then
         echo "source /opt/ros/noetic/setup.bash" >> "$HOME/.bashrc"
     fi
@@ -211,13 +220,30 @@ install_ros_noetic() {
     # marks Noetic as EOL, so plain `rosdep update` skips it and rosdep
     # can't resolve any ROS-distro keys (joy, effort_controllers,
     # openni_launch, ...). --include-eol-distros opts back in.
+    # Also: rosdep cache is per-user. Run as the current user even if a
+    # base image already ran `rosdep update` as root.
     rosdep update --include-eol-distros || warn "rosdep update failed (network?)"
-    ok "ROS Noetic installed."
+    ok "ROS Noetic ready."
 }
 
 # ---------- step: system dependencies -------------------------------------
 install_system_deps() {
     info "Installing system dependencies (xterm, MoveIt, pykdl, ...)"
+    # apt cache may be empty here in the Docker flow: the Dockerfile cleans
+    # /var/lib/apt/lists/* after its bootstrap install, and install_ros_noetic
+    # short-circuits its own apt_update when ROS is already installed (e.g. on
+    # the osrf-base slim image). Refresh before installing.
+    apt_update || warn "apt update before system deps failed (network?)"
+
+    # Some Ubuntu 20.04 base images (notably osrf/ros:noetic-*) ship a
+    # python3-openssl whose X509StoreFlags class references constants
+    # (X509_V_FLAG_NOTIFY_POLICY etc.) that newer system openssl no
+    # longer exposes — pip3 then crashes at import with AttributeError
+    # the moment it touches urllib3.contrib.pyopenssl. Upgrade both to
+    # the focal-updates versions so they stay in sync.
+    sudo apt-get install -y --only-upgrade "${APT_RETRY_OPTS[@]}" \
+        python3-openssl python3-cryptography 2>/dev/null \
+        || warn "pyopenssl / cryptography upgrade skipped (no newer apt version)"
     apt_install \
         xterm \
         terminator \

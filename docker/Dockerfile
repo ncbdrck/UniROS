@@ -1,21 +1,28 @@
-# UniROS RL stack — CUDA Ubuntu 20.04 + ROS Noetic + framework + 4 robots.
+# UniROS RL stack — Ubuntu 20.04 + ROS Noetic + framework + 4 robots.
 #
 # Build (from the directory containing this Dockerfile):
-#   ./build.sh                          # uses your host UID/GID by default
-#   docker build -t uniros:noetic .     # uses bake-time defaults (1000:1000)
+#   ./build.sh                          # default: CUDA-runtime base (~16 GB)
+#   ./build.sh --slim                   # osrf base, no CUDA in image (~12 GB)
 #
-# Headless run (Linux host):
-#   ./run.sh
+# Two supported base images are selected by the BASE_IMAGE build arg:
+#   nvidia/cuda:12.9.2-runtime-ubuntu20.04   # default; PyTorch/TF GPU
+#                                              works inside the container.
+#   osrf/ros:noetic-desktop-full-focal       # --slim; no CUDA libs baked
+#                                              in. Smaller image; training
+#                                              inside container is CPU-only
+#                                              unless you bring your own
+#                                              GPU PyTorch wheel.
 #
-# GUI run (rocker; Linux host with X11):
-#   ./run_gui.sh
+# Headless run:        ./run.sh
+# GUI run (rocker):    ./run_gui.sh
 #
 # Canonical copy lives in github.com/ncbdrck/UniROS. Identical copies
 # are kept in the other 5 ecosystem repos (MultiROS, RealROS,
 # sb3_ros_support, rl_environments, rl_training_validation) so users
 # can build it from whichever repo they cloned first.
 
-FROM nvidia/cuda:12.9.2-devel-ubuntu20.04
+ARG BASE_IMAGE=nvidia/cuda:12.9.2-runtime-ubuntu20.04
+FROM ${BASE_IMAGE}
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TZ=Etc/UTC

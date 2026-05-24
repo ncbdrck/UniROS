@@ -53,6 +53,47 @@ What works today
   root-owned on the host.
 
 
+.. note::
+
+   **Already on Ubuntu 20.04?** Skip Docker and run
+   ``install_uniros_stack.sh`` directly on the host. The native
+   path is faster, smaller, and avoids GL-passthrough /
+   ``nvidia-container-toolkit`` compatibility quirks that have
+   surfaced with newer NVIDIA driver branches on 20.04 hosts.
+   Docker is meant for hosts that *can't* install 20.04 natively.
+
+Two image variants
+------------------
+
+.. list-table::
+   :widths: 14 24 30 8 24
+   :header-rows: 1
+
+   * - Variant
+     - Tag
+     - Base image
+     - Size
+     - When to pick
+   * - **Default**
+     - ``uniros:noetic``
+     - ``nvidia/cuda:12.9.2-runtime-ubuntu20.04``
+     - ~16 GB
+     - NVIDIA GPU host AND you want CUDA-backed PyTorch / TF
+       running inside the container.
+   * - **Slim**
+     - ``uniros:noetic-slim``
+     - ``osrf/ros:noetic-desktop-full-focal``
+     - ~12 GB
+     - No GPU, or training runs on the host while only the env
+       runs in the container, or you just want a smaller download.
+       Gazebo / RViz still get hardware-accelerated GL via
+       ``rocker --nvidia``.
+
+Both variants ship identical application code (same UniROS
+framework, same ``rl_environments``, same training scripts). The
+only difference is whether CUDA runtime libraries are baked in.
+
+
 Quick start
 -----------
 
@@ -60,10 +101,17 @@ Quick start
 
    git clone -b gymnasium https://github.com/ncbdrck/UniROS.git
    cd UniROS/docker
-   ./build.sh         # 30–60 min first build; tags 'uniros:noetic'
 
-   ./run.sh           # headless
-   ./run_gui.sh       # GUI (Gazebo, RViz) via rocker
+   # Default image (CUDA-runtime base, ~16 GB)
+   ./build.sh
+   ./run_gui.sh
+
+   # — or — slim image (no CUDA baked in, ~12 GB)
+   ./build.sh --slim
+   ./run_gui.sh -t uniros:noetic-slim
+
+First build takes 30–60 minutes (clones every robot vendor repo,
+pip-installs SB3 / PyTorch, builds the catkin workspace).
 
 The same ``docker/`` tree (canonical in UniROS, byte-identical
 copies in MultiROS, RealROS, ``sb3_ros_support``, ``rl_environments``,
