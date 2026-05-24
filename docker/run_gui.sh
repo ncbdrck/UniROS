@@ -17,14 +17,30 @@
 # to add NVIDIA support automatically. The CUDA toolkit is available
 # inside the image because the Dockerfile uses an nvidia/cuda base image.
 #
-# The container is built with a non-root uniros user whose UID/GID
+# The container is built with a non-root 'uniros' user whose UID/GID
 # already match the host's at image-build time (build.sh passes
-# --build-arg USER_UID=$(id -u)). We intentionally do NOT use rocker's
-# --user extension: it does a destructive 'userdel -r uniros' to remap
-# the baked-in user to the host username, which wipes the
-# /home/uniros/uniros_ws workspace along with the home directory. The
-# container runs as 'uniros' instead of your host username, but bind-
-# mounted host directories stay correctly owned because the UID matches.
+# --build-arg USER_UID=$(id -u)).
+#
+# We DO use rocker's --user extension (otherwise rocker leaves the
+# image as USER root from its own apt installs and you end up running
+# the container as root), but with two important modifiers:
+#
+#   --user-override-name uniros
+#     Force the runtime user to be 'uniros' rather than rocker's
+#     default of $USER (the host username). This makes the "delete
+#     existing UID-1000 user, create new UID-1000 user" dance a no-op
+#     name-wise — the deleted and re-created users have the same name,
+#     same UID/GID, same /home/uniros path.
+#
+#   --user-preserve-home
+#     Skip the destructive `userdel -r uniros` step that would
+#     otherwise wipe /home/uniros/uniros_ws (the entire workspace)
+#     along with the home directory. With this flag, the existing
+#     home tree is preserved and only the user record is rewritten.
+#
+# Net effect: you run as 'uniros' (UID 1000, matching host),
+# /home/uniros/uniros_ws is intact and sourced via .bashrc, bind-
+# mounted host directories have correct ownership.
 #
 # USAGE:
 #   ./run_gui.sh                     # X11; auto-detects NVIDIA
@@ -68,7 +84,12 @@ EOF
     exit 1
 fi
 
-ROCKER_ARGS=( --x11 --network=host --ipc=host --name uniros-gui )
+ROCKER_ARGS=(
+    --x11
+    --user --user-override-name uniros --user-preserve-home
+    --network=host --ipc=host
+    --name uniros-gui
+)
 
 if $USE_GPU; then
     if command -v nvidia-smi >/dev/null 2>&1; then

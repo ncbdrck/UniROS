@@ -74,11 +74,14 @@ over `--network=host` to a learner on the host.
 
 Auto-detects NVIDIA. Pass `--no-gpu` to force software rendering
 (Intel / AMD / llvmpipe). The container runs as the baked-in
-`uniros` user (UID matched to your host at image build time);
-`run_gui.sh` intentionally does **not** use rocker's `--user`
-extension, which would `userdel -r` the baked-in user and wipe
-`/home/uniros/uniros_ws` along with it. Bind-mounted host
-directories still have correct ownership because the UIDs match.
+non-root `uniros` user (UID matched to your host at image build
+time). `run_gui.sh` invokes rocker with
+`--user --user-override-name uniros --user-preserve-home`: the
+override-name keeps the user named `uniros` instead of swapping in
+your host username, and the preserve-home flag stops rocker from
+deleting `/home/uniros/uniros_ws` (the entire workspace) along with
+the user's home directory. Bind-mounted host directories still have
+correct ownership because the UIDs match.
 
 ## Hardware passthrough
 
