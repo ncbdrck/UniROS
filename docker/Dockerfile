@@ -112,8 +112,6 @@ WORKDIR /home/${USERNAME}
 # user's HOME so bind mounts on a host with matching UID work cleanly.
 COPY --chown=${USERNAME}:${USERNAME} install_uniros_stack.sh /tmp/install_uniros_stack.sh
 RUN chmod +x /tmp/install_uniros_stack.sh \
-    && sed -i 's@source /opt/ros/noetic/setup.bash@set +u; source /opt/ros/noetic/setup.bash; set -u@' /tmp/install_uniros_stack.sh \
-    && sed -i 's@source "$WORKSPACE_PATH/devel/setup.bash" || true@set +u; source "$WORKSPACE_PATH/devel/setup.bash" || true; set -u@' /tmp/install_uniros_stack.sh \
     && UNIROS_INSTALL_IN_DOCKER=1 \
        /tmp/install_uniros_stack.sh -y -p /home/${USERNAME}/uniros_ws \
     && sudo rm -f /tmp/install_uniros_stack.sh \

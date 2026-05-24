@@ -194,8 +194,13 @@ install_ros_noetic() {
     if ! grep -q "source /opt/ros/noetic/setup.bash" "$HOME/.bashrc"; then
         echo "source /opt/ros/noetic/setup.bash" >> "$HOME/.bashrc"
     fi
+    # ROS setup.bash references variables that may be unset (and ROS
+    # bash helpers like roscd reference $1 in function bodies); both
+    # blow up under `set -u`. Disable nounset just for the source call.
     # shellcheck disable=SC1091
+    set +u
     source /opt/ros/noetic/setup.bash
+    set -u
     apt_install python3-rosdep python3-rosinstall python3-rosinstall-generator \
                 python3-wstool python3-catkin-tools build-essential \
         || fail "Failed to install ROS build tools"
@@ -416,8 +421,13 @@ build_workspace() {
 EOF
         ok "Created ~/.bash_profile (delegates to ~/.bashrc)."
     fi
+    # Same `set -u` deal as install_ros_noetic — disable nounset for
+    # the source so workspace setup.bash and ROS bash helpers don't
+    # explode on unset references.
     # shellcheck disable=SC1090
+    set +u
     source "$WORKSPACE_PATH/devel/setup.bash" || true
+    set -u
     ok "Workspace built."
 }
 
