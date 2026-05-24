@@ -44,19 +44,30 @@ piece-by-piece.
 
 If your host is Ubuntu 22.04 / 24.04, has a GPU with no Ubuntu 20.04
 driver (RTX 50-series, etc.), or is Windows with WSL2, the same
-stack ships as a Docker image:
+stack ships as a Docker image in two variants:
 
 ```bash
 git clone -b gymnasium https://github.com/ncbdrck/UniROS.git
 cd UniROS/docker
-./build.sh         # tags 'uniros:noetic'
-./run.sh           # headless
-./run_gui.sh       # GUI (Gazebo, RViz) via rocker
+
+# Default (CUDA-runtime base, ~16 GB)
+./build.sh
+./run_gui.sh
+
+# — or — slim (no CUDA in image, ~12 GB; matches the TIAGo pattern)
+./build.sh --slim
+./run_gui.sh -t uniros:noetic-slim
 ```
+
+If you're **already running Ubuntu 20.04 natively**, skip Docker and
+use the one-shot installer above on the host directly. Native install
+is faster, smaller, and avoids GL-passthrough / nvidia-container-toolkit
+compatibility quirks that have surfaced on 20.04 hosts with newer
+NVIDIA driver branches.
 
 See [`docker/README.md`](docker/README.md) and the
 [install guide's Docker section](https://uniros.readthedocs.io/en/latest/guides/install.html#option-c-docker)
-for hardware passthrough, GPU notes, and bind-mounting a host
+for variant comparison, hardware passthrough, GPU notes, and bind-mounting a host
 workspace for active development.
 
 

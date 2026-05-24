@@ -324,18 +324,32 @@ Option C — Docker
 
 If your host can't run Ubuntu 20.04 natively (modern OEM laptop,
 Ubuntu 22.04 / 24.04, a GPU + driver stack with no Ubuntu 20.04
-support, or Windows with WSL2), the same stack is available as a
-Docker image:
+support, or Windows with WSL2), the same stack ships as a Docker
+image in two variants:
 
 .. code-block:: bash
 
    git clone -b gymnasium https://github.com/ncbdrck/UniROS.git
    cd UniROS/docker
-   ./build.sh         # 30–60 min first build; tags 'uniros:noetic'
-   ./run.sh           # headless
-   ./run_gui.sh       # GUI (Gazebo, RViz) via rocker
 
-See :doc:`docker` for the full Docker reference — when to use it,
+   # Default (CUDA-runtime base, ~16 GB)
+   ./build.sh
+   ./run_gui.sh
+
+   # — or — slim (no CUDA in image, ~12 GB; matches the TIAGo pattern)
+   ./build.sh --slim
+   ./run_gui.sh -t uniros:noetic-slim
+
+.. note::
+
+   If you're **already running Ubuntu 20.04 natively**, use Option A
+   or B above on the host directly — skip Docker. The native path is
+   faster, smaller, and avoids GL-passthrough / nvidia-container-toolkit
+   compatibility quirks that have surfaced on 20.04 hosts with newer
+   NVIDIA driver branches. Docker is for hosts that *can't* install
+   20.04 natively.
+
+See :doc:`docker` for the full Docker reference — variant comparison,
 hardware passthrough (USB and network), GPU, bind-mounting a host
 workspace for active development, troubleshooting, and the roadmap
 for in-progress features.
