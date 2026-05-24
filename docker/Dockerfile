@@ -81,6 +81,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8
 
+# Override the base image's NVIDIA_DRIVER_CAPABILITIES (which is set to
+# the minimal "compute,utility" by nvidia/cuda images). Without
+# "graphics" the NVIDIA Container Toolkit does NOT inject libGLX_nvidia
+# / libEGL_nvidia at runtime, so libglvnd falls back to Mesa and any
+# 3D app (Gazebo, RViz with OGRE) errors out trying to load
+# nvidia-drm_dri.so. "all" enables graphics, compute, utility, video,
+# and display.
+ENV NVIDIA_DRIVER_CAPABILITIES=all
+
 # Create the install user with passwordless sudo. The installer uses
 # sudo for system-level steps (apt, rosdep init). Preserve the noninteractive
 # debconf environment through sudo so package configuration cannot block

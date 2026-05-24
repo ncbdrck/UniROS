@@ -216,6 +216,9 @@ install_system_deps() {
     apt_install \
         xterm \
         terminator \
+        bash-completion \
+        gedit \
+        mesa-utils \
         ros-noetic-moveit \
         python3-pykdl \
         ros-noetic-kdl-parser-py \
@@ -401,6 +404,17 @@ build_workspace() {
             echo "source $WORKSPACE_PATH/devel/setup.bash" >> "$HOME/.bashrc"
             ok "Appended to ~/.bashrc"
         fi
+    fi
+    # Login shells (e.g. terminator's default child shells) read
+    # ~/.bash_profile, not ~/.bashrc. Make sure ROS + the workspace are
+    # sourced in both cases by delegating .bash_profile to .bashrc.
+    if [[ ! -f "$HOME/.bash_profile" ]]; then
+        cat > "$HOME/.bash_profile" <<'EOF'
+# Delegate to .bashrc so login shells (terminator, ssh, su -l) source
+# the same environment as interactive non-login shells.
+[[ -f ~/.bashrc ]] && . ~/.bashrc
+EOF
+        ok "Created ~/.bash_profile (delegates to ~/.bashrc)."
     fi
     # shellcheck disable=SC1090
     source "$WORKSPACE_PATH/devel/setup.bash" || true
