@@ -202,7 +202,11 @@ install_ros_noetic() {
     if [[ ! -f /etc/ros/rosdep/sources.list.d/20-default.list ]]; then
         sudo rosdep init || warn "rosdep init failed (already initialised?)"
     fi
-    rosdep update || warn "rosdep update failed (network?)"
+    # ROS Noetic went end-of-life on 2025-05-31. The rosdistro index now
+    # marks Noetic as EOL, so plain `rosdep update` skips it and rosdep
+    # can't resolve any ROS-distro keys (joy, effort_controllers,
+    # openni_launch, ...). --include-eol-distros opts back in.
+    rosdep update --include-eol-distros || warn "rosdep update failed (network?)"
     ok "ROS Noetic installed."
 }
 
@@ -334,6 +338,12 @@ install_rl_environments() {
     clone_if_missing "https://github.com/NiryoRobotics/ned_ros.git" "$WORKSPACE_PATH/src/ned_ros"
     if [[ -d "$WORKSPACE_PATH/src/ned_ros/.git" ]]; then
         (cd "$WORKSPACE_PATH/src/ned_ros" && git submodule update --init ros-foxglove-bridge 2>/dev/null) || true
+        # foxglove_bridge depends on ros_babel_fish (not in apt, not
+        # auto-cloned). The Niryo RL envs don't need foxglove visualization,
+        # so CATKIN_IGNORE the submodule and let catkin skip it.
+        if [[ -d "$WORKSPACE_PATH/src/ned_ros/ros-foxglove-bridge" ]]; then
+            touch "$WORKSPACE_PATH/src/ned_ros/ros-foxglove-bridge/CATKIN_IGNORE"
+        fi
         if [[ -f "$WORKSPACE_PATH/src/ned_ros/requirements.txt" ]]; then
             pip3 install --user -r "$WORKSPACE_PATH/src/ned_ros/requirements.txt" \
                 || warn "ned_ros requirements.txt install had issues"
@@ -375,7 +385,15 @@ build_workspace() {
     if [[ ! -f "$WORKSPACE_PATH/.catkin_tools" ]] && [[ ! -d "$WORKSPACE_PATH/.catkin_tools" ]]; then
         catkin init || warn "catkin init returned non-zero (probably already initialised)"
     fi
-    rosdep install --from-paths src --ignore-src -r -y --skip-keys "python-rpi.gpio" \
+    # Skip keys that aren't in apt:
+    #   python-rpi.gpio — Raspberry Pi-only, not on x86_64 Ubuntu.
+    #   code_coverage   — Niryo CI-only dep, no public apt/source repo.
+    #                     Used in test builds (CATKIN_ENABLE_TESTING=ON);
+    #                     our catkin build doesn't enable tests.
+    #   ros_babel_fish  — only used by ned_ros's optional foxglove_bridge
+    #                     submodule, which we CATKIN_IGNORE below.
+    rosdep install --from-paths src --ignore-src -r -y \
+        --skip-keys "python-rpi.gpio code_coverage ros_babel_fish" \
         || warn "rosdep install had issues"
     catkin build || fail "catkin build failed"
     if ! grep -q "source $WORKSPACE_PATH/devel/setup.bash" "$HOME/.bashrc"; then

@@ -17,10 +17,14 @@
 # to add NVIDIA support automatically. The CUDA toolkit is available
 # inside the image because the Dockerfile uses an nvidia/cuda base image.
 #
-# The container is built with a non-root uniros user; rocker's --user
-# flag layers a runtime user matching your *current* host UID over the
-# baked one, so file ownership stays clean even if you didn't rebuild
-# the image when your UID changed.
+# The container is built with a non-root uniros user whose UID/GID
+# already match the host's at image-build time (build.sh passes
+# --build-arg USER_UID=$(id -u)). We intentionally do NOT use rocker's
+# --user extension: it does a destructive 'userdel -r uniros' to remap
+# the baked-in user to the host username, which wipes the
+# /home/uniros/uniros_ws workspace along with the home directory. The
+# container runs as 'uniros' instead of your host username, but bind-
+# mounted host directories stay correctly owned because the UID matches.
 #
 # USAGE:
 #   ./run_gui.sh                     # X11; auto-detects NVIDIA
@@ -64,7 +68,7 @@ EOF
     exit 1
 fi
 
-ROCKER_ARGS=( --x11 --user --network=host --ipc=host --name uniros-gui )
+ROCKER_ARGS=( --x11 --network=host --ipc=host --name uniros-gui )
 
 if $USE_GPU; then
     if command -v nvidia-smi >/dev/null 2>&1; then

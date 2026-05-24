@@ -73,9 +73,12 @@ over `--network=host` to a learner on the host.
 ```
 
 Auto-detects NVIDIA. Pass `--no-gpu` to force software rendering
-(Intel / AMD / llvmpipe). rocker's `--user` flag layers your current
-host UID at runtime, so file ownership stays clean even if you
-didn't rebuild after your host UID changed.
+(Intel / AMD / llvmpipe). The container runs as the baked-in
+`uniros` user (UID matched to your host at image build time);
+`run_gui.sh` intentionally does **not** use rocker's `--user`
+extension, which would `userdel -r` the baked-in user and wipe
+`/home/uniros/uniros_ws` along with it. Bind-mounted host
+directories still have correct ownership because the UIDs match.
 
 ## Hardware passthrough
 

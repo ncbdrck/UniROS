@@ -29,6 +29,24 @@ ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND} \
 RUN printf 'Acquire::Retries "5";\nAcquire::http::Timeout "60";\nAcquire::https::Timeout "60";\n' \
         > /etc/apt/apt.conf.d/80-retries
 
+# Pre-seed every debconf prompt that has historically shown up when ROS /
+# MoveIt / X11 / keyboard packages get pulled in transitively. With these
+# answers locked in, no install step can block waiting for keyboard layout,
+# timezone region, or console encoding selection — even if a package
+# silently resets the debconf frontend internally.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends debconf-utils \
+    && echo "tzdata tzdata/Areas select Etc"                                        | debconf-set-selections \
+    && echo "tzdata tzdata/Zones/Etc select UTC"                                    | debconf-set-selections \
+    && echo "keyboard-configuration keyboard-configuration/layoutcode string us"    | debconf-set-selections \
+    && echo "keyboard-configuration keyboard-configuration/layout select English (US)" | debconf-set-selections \
+    && echo "keyboard-configuration keyboard-configuration/variantcode string"      | debconf-set-selections \
+    && echo "keyboard-configuration keyboard-configuration/modelcode string pc105"  | debconf-set-selections \
+    && echo "keyboard-configuration keyboard-configuration/xkb-keymap select us"    | debconf-set-selections \
+    && echo "console-setup console-setup/charmap47 select UTF-8"                    | debconf-set-selections \
+    && echo "console-setup console-setup/codeset47 select Guess optimal character set" | debconf-set-selections \
+    && rm -rf /var/lib/apt/lists/*
+
 # The container runs as a non-root user so that bind-mounted host
 # workspaces don't end up with root-owned build/ and devel/ files.
 # UID/GID are build-time arguments — build.sh defaults them to the
