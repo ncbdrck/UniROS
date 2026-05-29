@@ -232,7 +232,7 @@ kwarg.
           + not_within_goal_space_reward  if goal sampling failed
 
 Defaults (from ``config/ur5e_reach_task_config.yaml``):
-``reach_tolerance=0.05``, ``multiplier_dist_reward=2.0``,
+``reach_tolerance=0.02``, ``multiplier_dist_reward=2.0``,
 ``reached_goal_reward=20``, ``step_reward=-0.5``,
 ``joint_limits_reward=-2.0``, ``none_exe_reward=-5.0``,
 ``not_within_goal_space_reward=-2.0``.

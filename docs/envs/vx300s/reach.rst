@@ -172,13 +172,13 @@ world z = 0.78 — so a goal z of 0.20 is 1.0 m above the floor.)
 Rewards
 -------
 
-**Sparse** (required for HER): ``0.0`` if ``‖ee − goal‖ < 0.05`` else
+**Sparse** (required for HER): ``0.0`` if ``‖ee − goal‖ < 0.02`` else
 ``-1.0``.
 
 **Dense** (default for std env): dist-shaped penalty + reached-goal
 bonus + per-step penalty + joint-limit / non-executable / not-in-goal-
 space penalties. Defaults from ``config/vx300s_reach_task_config.yaml``:
-``reach_tolerance=0.05``, ``multiplier_dist_reward=2.0``,
+``reach_tolerance=0.02``, ``multiplier_dist_reward=2.0``,
 ``reached_goal_reward=20``, ``step_reward=-0.5``,
 ``joint_limits_reward=-2.0``, ``none_exe_reward=-5.0``,
 ``not_within_goal_space_reward=-2.0``.

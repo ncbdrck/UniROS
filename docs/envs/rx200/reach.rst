@@ -118,11 +118,11 @@ z = 0.78.)
 Rewards
 -------
 
-**Sparse**: ``0.0`` if ``‖ee − goal‖ < 0.05`` else ``-1.0``.
+**Sparse**: ``0.0`` if ``‖ee − goal‖ < 0.02`` else ``-1.0``.
 
 **Dense**: dist-shaped + reached-goal bonus + per-step penalty +
 joint/none/goal-space penalties. Defaults from
-``config/rx200_reach_task_config.yaml``: ``reach_tolerance=0.05``,
+``config/rx200_reach_task_config.yaml``: ``reach_tolerance=0.02``,
 ``multiplier_dist_reward=2.0``, ``reached_goal_reward=20``,
 ``step_reward=-0.5``, ``joint_limits_reward=-2.0``,
 ``none_exe_reward=-5.0``, ``not_within_goal_space_reward=-2.0``.

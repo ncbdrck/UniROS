@@ -119,10 +119,10 @@ Observation Space
 Rewards
 -------
 
-**Sparse**: ``0.0`` if ``‖ee − goal‖ < 0.05`` else ``-1.0``.
+**Sparse**: ``0.0`` if ``‖ee − goal‖ < 0.02`` else ``-1.0``.
 
 **Dense**: same shape as the other robots' reach envs. Defaults
-from ``config/ned2_reach_task_config.yaml``: ``reach_tolerance=0.05``,
+from ``config/ned2_reach_task_config.yaml``: ``reach_tolerance=0.02``,
 ``multiplier_dist_reward=2.0``, ``reached_goal_reward=20``,
 ``step_reward=-0.5``.
 
