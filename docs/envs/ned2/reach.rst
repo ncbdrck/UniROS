@@ -89,7 +89,11 @@ Observation Space
 * Current joint velocities (8)
 
 **Goal env.** Dict with three keys.
-``desired_goal`` / ``achieved_goal`` = Box(3,):
+``desired_goal`` / ``achieved_goal`` = Box(3,). The bounds below are
+the declared *observation-space* bounds (mirror
+``position_desired_goal_min/max`` in ``ned2_reach_task_config.yaml``);
+the per-episode *sampling* support is the narrower
+``position_goal_min/max`` (see Goal sampling below).
 
 .. list-table::
    :widths: 8 16 32 22 22
@@ -103,13 +107,13 @@ Observation Space
    * - 0
      - 1
      - goal x
-     - 0.20
+     - 0.15
      - 0.40
    * - 1
      - 1
      - goal y
-     - -0.20
-     - 0.20
+     - -0.40
+     - 0.40
    * - 2
      - 1
      - goal z

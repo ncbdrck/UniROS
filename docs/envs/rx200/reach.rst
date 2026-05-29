@@ -85,7 +85,11 @@ Observation Space
 * Current joint velocities (8)
 
 **Goal env.** Dict with three keys. ``desired_goal`` /
-``achieved_goal`` = Box(3,):
+``achieved_goal`` = Box(3,). The bounds below are the declared
+*observation-space* bounds (mirror ``position_desired_goal_min/max``
+in ``rx200_reach_task_config.yaml``); for RX200 the per-episode
+*sampling* support (``position_goal_min/max``) happens to match
+exactly.
 
 .. list-table::
    :widths: 8 16 32 22 22
@@ -100,7 +104,7 @@ Observation Space
      - 1
      - goal x
      - 0.15
-     - 0.35
+     - 0.25
    * - 1
      - 1
      - goal y
@@ -109,11 +113,12 @@ Observation Space
    * - 2
      - 1
      - goal z
-     - 0.02
-     - 0.30
+     - 0.15
+     - 0.25
 
 (Goal coords are in the ``rx200/base_link`` frame; base is at world
-z = 0.78.)
+z = 0.78. Values mirror ``position_(desired_)goal_min/max`` in
+``rx200_reach_task_config.yaml``.)
 
 Rewards
 -------
