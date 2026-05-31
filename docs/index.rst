@@ -29,7 +29,8 @@ the applications as ready-made examples.
    * - :doc:`api/multiros`
      - Gazebo-based simulation environments. Spawn multiple gym
        envs in parallel against a single rosmaster, run roscores
-       on arbitrary ports, manage Gazebo physics.
+       on arbitrary ports, manage Gazebo physics. An experimental
+       MuJoCo backend is in progress (see :doc:`guides/mujoco_backend`).
    * - :doc:`api/realros`
      - The real-hardware counterpart to MultiROS. Same gym API,
        talks to physical robots instead of Gazebo.
@@ -58,6 +59,7 @@ the applications as ready-made examples.
    envs/index
    guides/env_templates
    guides/env_creation_sim
+   guides/mujoco_backend
    guides/env_creation_real
 
 .. toctree::
