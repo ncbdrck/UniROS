@@ -312,8 +312,36 @@ Whichever option you use, TensorBoard is the standard reader:
 .. code-block:: bash
 
    tensorboard --logdir /path/to/logs/
+   # then open http://localhost:6006
 
 Saved models from ``sb3_ros_support`` are SB3 ``.zip`` files that
 can be loaded back via
 :func:`sb3_ros_support.core.BasicModel.load_trained_model` or
 SB3's own ``Algorithm.load(...)``.
+
+Weights & Biases (optional)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When training through ``sb3_ros_support``, the same metrics can be
+mirrored to `Weights & Biases <https://wandb.ai/>`_ for a hosted web
+UI you can watch from anywhere. It is **off by default**; enable it
+per config:
+
+.. code-block:: yaml
+
+   use_wandb: True
+   wandb_params:
+     project: uniros     # W&B project name
+     entity:             # your W&B username/team; blank uses your default
+
+Then install and log in once::
+
+   pip install wandb
+   wandb login
+
+The run starts automatically with ``sync_tensorboard=True``, so every
+metric SB3 already writes to TensorBoard appears in W&B too — no
+per-algorithm changes. ``wandb`` is an optional dependency and is
+lazily imported: if it is not installed, training logs a warning and
+continues with TensorBoard only. W&B is skipped when loading a saved
+model for validation.
