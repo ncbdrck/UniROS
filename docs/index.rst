@@ -60,6 +60,7 @@ the applications as ready-made examples.
    guides/env_templates
    guides/env_creation_sim
    guides/mujoco_backend
+   guides/env_creation_sim_mujoco
    guides/env_creation_real
 
 .. toctree::
