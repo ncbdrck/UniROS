@@ -59,6 +59,8 @@ apt_install() {
 ASSUME_YES=false
 WORKSPACE_PATH=""
 DEFAULT_WS_NAME="uniros_ws"
+INSTALL_MUJOCO=false
+MUJOCO_VERSION="3.3.5"
 
 usage() {
     cat <<EOF
@@ -74,19 +76,22 @@ Options:
               Must end in '_ws/' or have a 'src/' subfolder, otherwise the
               script prompts to create the workspace or fall back to default.
   -y          Assume 'yes' to every prompt. Useful for CI / unattended runs.
+  -m          Also install the optional MuJoCo backend (mujoco_ros_pkgs + MuJoCo $MUJOCO_VERSION).
 
 Examples:
   $(basename "$0")                  Interactive install into ~/$DEFAULT_WS_NAME.
   $(basename "$0") -y               Non-interactive; install all components.
   $(basename "$0") -p ~/my_ws -y    All components into ~/my_ws (unattended).
+  $(basename "$0") -m               Interactive install, including the MuJoCo backend.
 EOF
 }
 
-while getopts 'hp:y' opt; do
+while getopts 'hp:ym' opt; do
     case "$opt" in
         h) usage; exit 0;;
         p) WORKSPACE_PATH=$OPTARG;;
         y) ASSUME_YES=true;;
+        m) INSTALL_MUJOCO=true;;
         *) usage; exit 1;;
     esac
 done
@@ -412,6 +417,58 @@ install_rl_training_validation() {
     ok "rl_training_validation installed."
 }
 
+# ---------- step: MuJoCo backend (optional) -------------------------------
+install_mujoco_backend() {
+    info "[+] MuJoCo backend (mujoco_ros_pkgs + MuJoCo $MUJOCO_VERSION)..."
+
+    local mujoco_root="$HOME/.mujoco"
+    local mujoco_dir="$mujoco_root/mujoco-$MUJOCO_VERSION"
+
+    # Download the prebuilt MuJoCo library if it isn't already present.
+    if [[ ! -d "$mujoco_dir" ]]; then
+        info "Downloading MuJoCo $MUJOCO_VERSION to $mujoco_dir ..."
+        mkdir -p "$mujoco_root" || fail "Failed to create $mujoco_root"
+        local tarball="$mujoco_root/mujoco-$MUJOCO_VERSION-linux-x86_64.tar.gz"
+        curl -fSL -o "$tarball" \
+            "https://github.com/google-deepmind/mujoco/releases/download/$MUJOCO_VERSION/mujoco-$MUJOCO_VERSION-linux-x86_64.tar.gz" \
+            || fail "Failed to download MuJoCo $MUJOCO_VERSION"
+        tar -xzf "$tarball" -C "$mujoco_root" || fail "Failed to extract MuJoCo $MUJOCO_VERSION"
+        rm -f "$tarball"
+        ok "MuJoCo $MUJOCO_VERSION installed at $mujoco_dir"
+    else
+        ok "MuJoCo $MUJOCO_VERSION already present at $mujoco_dir"
+    fi
+
+    # Export the build/runtime environment for this session so the workspace
+    # build below can find MuJoCo, and persist it for future shells.
+    export MUJOCO_DIR="$mujoco_dir"
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$mujoco_dir/lib"
+    export LIBRARY_PATH="${LIBRARY_PATH:+$LIBRARY_PATH:}$mujoco_dir/lib"
+    if ! grep -q "export MUJOCO_DIR=$mujoco_dir" "$HOME/.bashrc"; then
+        {
+            echo ""
+            echo "# MuJoCo (used by the MultiROS MuJoCo backend / mujoco_ros_pkgs)"
+            echo "export MUJOCO_DIR=$mujoco_dir"
+            echo 'export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$MUJOCO_DIR/lib'
+            echo 'export LIBRARY_PATH=${LIBRARY_PATH:+$LIBRARY_PATH:}$MUJOCO_DIR/lib'
+        } >> "$HOME/.bashrc"
+        ok "Appended MuJoCo environment variables to ~/.bashrc"
+    fi
+
+    # Clone the MuJoCo ROS integration packages. Their system dependencies are
+    # resolved by rosdep over the workspace src tree during the build step.
+    clone_if_missing "https://github.com/ubi-agni/mujoco_ros_pkgs.git" \
+                     "$WORKSPACE_PATH/src/mujoco_ros_pkgs" -b noetic-devel
+
+    # Clone the example VX300S MuJoCo environments that validate the backend
+    # end-to-end (reach / push / pick-and-place, plus goal variants). Optional
+    # but handy as a working reference for building your own MuJoCo task envs.
+    clone_if_missing "https://github.com/ncbdrck/vx300s_mujoco_envs.git" \
+                     "$WORKSPACE_PATH/src/vx300s_mujoco_envs"
+
+    ok "MuJoCo backend dependencies ready."
+}
+
 # ---------- step: build the workspace -------------------------------------
 build_workspace() {
     info "Building the workspace with catkin..."
@@ -426,8 +483,12 @@ build_workspace() {
     #                     our catkin build doesn't enable tests.
     #   ros_babel_fish  — only used by ned_ros's optional foxglove_bridge
     #                     submodule, which we CATKIN_IGNORE below.
+    #   mujoco_ros*     — the MuJoCo backend packages are source-built
+    #                     (cloned with -m) and have no apt package; when the
+    #                     backend isn't installed they are an optional runtime
+    #                     dependency only.
     rosdep install --from-paths src --ignore-src -r -y \
-        --skip-keys "python-rpi.gpio code_coverage ros_babel_fish" \
+        --skip-keys "python-rpi.gpio code_coverage ros_babel_fish mujoco_ros mujoco_ros_msgs mujoco_ros_control" \
         || warn "rosdep install had issues"
     catkin build || fail "catkin build failed"
     if ! grep -q "source $WORKSPACE_PATH/devel/setup.bash" "$HOME/.bashrc"; then
@@ -487,11 +548,20 @@ main() {
         confirm "Install rl_training_validation (train + validate scripts)?" true         && INSTALL_RL_TRAIN=true  || INSTALL_RL_TRAIN=false
     fi
 
+    # The MuJoCo backend is optional and off by default. Enable it with -m, or
+    # opt in here when running interactively.
+    if ! $INSTALL_MUJOCO && ! $ASSUME_YES; then
+        confirm "Install the optional MuJoCo simulator backend (mujoco_ros_pkgs + MuJoCo $MUJOCO_VERSION)?" false \
+            && INSTALL_MUJOCO=true || INSTALL_MUJOCO=false
+    fi
+
     if $INSTALL_ROS;       then install_ros_noetic;             install_system_deps; fi
     if $INSTALL_UNIROS;    then install_uniros;                                       fi
     if $INSTALL_SB3;       then install_sb3_ros_support;                              fi
     if $INSTALL_RL_ENVS;   then install_rl_environments;                              fi
     if $INSTALL_RL_TRAIN;  then install_rl_training_validation;                       fi
+
+    if $INSTALL_MUJOCO;    then install_mujoco_backend;                               fi
 
     build_workspace
 

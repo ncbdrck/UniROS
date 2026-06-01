@@ -117,10 +117,16 @@ WORKDIR /home/${USERNAME}
 # container; install those rules on the *host* if you'll be passing
 # /dev/ttyDXL through). The workspace is created under the uniros
 # user's HOME so bind mounts on a host with matching UID work cleanly.
+# Optionally bake in the experimental MuJoCo backend (mujoco_ros_pkgs +
+# MuJoCo + the example vx300s_mujoco_envs). Off by default, so the image
+# stays Gazebo-only and identical to before; enable at build time with
+#   ./build.sh --mujoco          (passes --build-arg INSTALL_MUJOCO=true)
+ARG INSTALL_MUJOCO=false
 COPY --chown=${USERNAME}:${USERNAME} install_uniros_stack.sh /tmp/install_uniros_stack.sh
 RUN chmod +x /tmp/install_uniros_stack.sh \
     && UNIROS_INSTALL_IN_DOCKER=1 \
        /tmp/install_uniros_stack.sh -y -p /home/${USERNAME}/uniros_ws \
+       $( [ "${INSTALL_MUJOCO}" = "true" ] && echo "-m" ) \
     && sudo rm -f /tmp/install_uniros_stack.sh \
     && sudo rm -rf /var/lib/apt/lists/* /tmp/* \
     && rm -rf /home/${USERNAME}/.cache/pip

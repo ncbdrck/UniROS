@@ -32,6 +32,7 @@
 # USAGE:
 #   ./build.sh                          # default; tag 'uniros:noetic'
 #   ./build.sh --slim                   # slim variant; tag 'uniros:noetic-slim'
+#   ./build.sh --mujoco                 # also bake in the experimental MuJoCo backend
 #   ./build.sh -t myname:tag            # custom tag (combine with --slim too)
 #   ./build.sh -u 1001 -g 1001          # explicit UID/GID
 #   ./build.sh -h                       # help
@@ -50,6 +51,7 @@ TAG=""
 USER_UID="$(id -u)"
 USER_GID="$(id -g)"
 CUSTOM_TAG=false
+INSTALL_MUJOCO=false   # --mujoco bakes in the experimental MuJoCo backend
 
 usage() {
     sed -n '2,/^$/p' "$0"
@@ -62,6 +64,7 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         -h|--help)  usage 0;;
         --slim)     SLIM=true; shift;;
+        --mujoco)   INSTALL_MUJOCO=true; shift;;
         -t)         TAG="$2"; CUSTOM_TAG=true; shift 2;;
         -u)         USER_UID="$2"; shift 2;;
         -g)         USER_GID="$2"; shift 2;;
@@ -99,10 +102,12 @@ cp "$INSTALLER_SRC" "$INSTALLER_DST"
 echo "Building $TAG from $HERE"
 echo "  BASE_IMAGE=$BASE_IMAGE"
 echo "  USER_UID=$USER_UID  USER_GID=$USER_GID"
+echo "  INSTALL_MUJOCO=$INSTALL_MUJOCO"
 docker build \
     --build-arg "BASE_IMAGE=$BASE_IMAGE" \
     --build-arg "USER_UID=$USER_UID" \
     --build-arg "USER_GID=$USER_GID" \
+    --build-arg "INSTALL_MUJOCO=$INSTALL_MUJOCO" \
     -t "$TAG" \
     "$HERE"
 
