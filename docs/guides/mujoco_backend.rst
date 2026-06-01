@@ -1,15 +1,15 @@
 MuJoCo backend (experimental)
 =============================
 
-.. admonition:: Under development — not yet merged
+.. admonition:: Available (experimental) — not yet merged
    :class: warning
 
-   The MuJoCo simulation backend is a **work in progress** on the
-   MultiROS branch ``feature/mujoco-backend``. It is not part of any
-   stable release, and its APIs, defaults, and structure may still
-   change. The default, supported backend remains **Gazebo** (see
-   :doc:`env_creation_sim`). Use this guide to follow or try the
-   MuJoCo work, not as a stable reference.
+   The MuJoCo simulation backend is **available but experimental**,
+   living on the MultiROS branch ``feature/mujoco-backend``. It is
+   usable today (reach, push, and pick-and-place envs run on it), but
+   it is not yet merged into a stable release, and its APIs, defaults,
+   and structure may still change. The default, supported backend
+   remains **Gazebo** (see :doc:`env_creation_sim`).
 
 MultiROS is gaining a `MuJoCo <https://mujoco.org/>`_ simulation
 backend (via `mujoco_ros_pkgs
@@ -90,14 +90,19 @@ Trying it
 ---------
 
 Install the backend with the MultiROS installer's opt-in flag (it
-fetches a prebuilt MuJoCo and clones ``mujoco_ros_pkgs``)::
+fetches a prebuilt MuJoCo and clones ``mujoco_ros_pkgs`` plus the
+example ``vx300s_mujoco_envs``)::
 
    ./install_uniros_stack.sh -m
 
+Or, for the Docker image, bake the backend in at build time::
+
+   cd UniROS/docker && ./build.sh --mujoco
+
 A worked example lives in the standalone package
 `vx300s_mujoco_envs <https://github.com/ncbdrck/vx300s_mujoco_envs>`_,
-which validates the backend on the Trossen VX300S reach task and is
-structured for additional tasks (pick-and-place, push) later. It
+which validates the backend on the Trossen VX300S reach, push, and
+pick-and-place tasks. It
 mirrors the Gazebo VX300S envs but is built entirely from the MuJoCo
 tooling. The one-command workflow matches the Gazebo envs::
 
@@ -107,6 +112,8 @@ tooling. The one-command workflow matches the Gazebo envs::
 or in Python::
 
    import uniros as gym
+   # Importing the task module registers its env id with gymnasium.
+   from vx300s_mujoco_envs.task_envs.reach import vx300s_mujoco_reach  # noqa: F401
    env = gym.make("VX300SMujocoReacherSim-v0")
    obs, info = env.reset(seed=0)
    for _ in range(50):
@@ -124,7 +131,7 @@ Status and limitations
 ----------------------
 
 * Branch ``feature/mujoco-backend`` on MultiROS; **not merged**.
-* Validated so far: VX300S reach bring-up and training plumbing.
-* Goal-conditioned (HER) tasks and additional robots/tasks are
-  in progress.
+* Implemented: VX300S reach, push, and pick-and-place, each with a
+  goal-conditioned (HER) variant.
+* Additional robots/tasks may follow.
 * APIs may change before this lands in a release.

@@ -1,12 +1,13 @@
 Creating a simulation environment (MuJoCo)
 ==========================================
 
-.. admonition:: Under development — not yet merged
+.. admonition:: Available (experimental) — not yet merged
    :class: warning
 
-   The MuJoCo backend is a work in progress on the MultiROS branch
-   ``feature/mujoco-backend`` and is not part of a stable release.
-   APIs and defaults may change. For the stable Gazebo workflow see
+   The MuJoCo backend is **available but experimental**, on the
+   MultiROS branch ``feature/mujoco-backend``; it is usable today but
+   not yet merged into a stable release, and APIs and defaults may
+   change. For the stable Gazebo workflow see
    :doc:`env_creation_sim`; for the backend overview see
    :doc:`mujoco_backend`.
 
@@ -20,7 +21,8 @@ tasks) objects as free-joint bodies.
 The worked example throughout is the ``vx300s_mujoco_envs`` package
 (`github.com/ncbdrck/vx300s_mujoco_envs
 <https://github.com/ncbdrck/vx300s_mujoco_envs>`_), which implements
-the ViperX-300 S **reach** and **push** tasks on the MuJoCo backend.
+the ViperX-300 S **reach**, **push**, and **pick-and-place** tasks on
+the MuJoCo backend.
 
 
 1. Pick a starting point

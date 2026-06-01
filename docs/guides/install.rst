@@ -340,6 +340,11 @@ image in two variants:
    ./build.sh --slim
    ./run_gui.sh -t uniros:noetic-slim
 
+   # add --mujoco to either variant to bake in the experimental MuJoCo
+   # backend (mujoco_ros_pkgs + MuJoCo + the example vx300s_mujoco_envs);
+   # omit it for a Gazebo-only image (the default)
+   ./build.sh --mujoco
+
 .. note::
 
    If you're **already running Ubuntu 20.04 natively**, use Option A

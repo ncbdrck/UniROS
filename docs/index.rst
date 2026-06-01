@@ -30,7 +30,7 @@ the applications as ready-made examples.
      - Gazebo-based simulation environments. Spawn multiple gym
        envs in parallel against a single rosmaster, run roscores
        on arbitrary ports, manage Gazebo physics. An experimental
-       MuJoCo backend is in progress (see :doc:`guides/mujoco_backend`).
+       MuJoCo backend is available (see :doc:`guides/mujoco_backend`).
    * - :doc:`api/realros`
      - The real-hardware counterpart to MultiROS. Same gym API,
        talks to physical robots instead of Gazebo.
@@ -94,14 +94,12 @@ the applications as ready-made examples.
 About these docs
 ----------------
 
-This documentation was drafted in collaboration with two AI
-assistants — Anthropic's Claude (for writing and structure) and
-OpenAI's Codex CLI (for review passes) — working from the UniROS
-codebase, the *Sensors* paper, and design decisions made by the
-author. Each change was reviewed before being committed.
+This documentation is written and maintained alongside the UniROS
+codebase and the *Sensors* paper. Every change is reviewed before
+being committed.
 
-That said, AI-assisted docs can still contain hallucinated APIs,
-stale examples, or subtle factual errors. **If you find an
+Even so, docs can drift out of sync with the code — a renamed API, a
+stale example, or a subtle factual error. **If you find an
 inaccuracy, please open an issue at**
 `github.com/ncbdrck/UniROS/issues <https://github.com/ncbdrck/UniROS/issues>`_.
 
