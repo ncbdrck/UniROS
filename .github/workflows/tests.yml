@@ -2,9 +2,9 @@ name: tests
 
 on:
   push:
-    branches: [main, master, gymnasium, tier2-2026]
+    branches: [main, master, gymnasium]
   pull_request:
-    branches: [main, master, gymnasium, tier2-2026]
+    branches: [main, master, gymnasium]
   workflow_dispatch: {}
 
 jobs:
