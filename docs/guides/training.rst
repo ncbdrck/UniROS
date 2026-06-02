@@ -315,9 +315,11 @@ Whichever option you use, TensorBoard is the standard reader:
    # then open http://localhost:6006
 
 Saved models from ``sb3_ros_support`` are SB3 ``.zip`` files that
-can be loaded back via
-:func:`sb3_ros_support.core.BasicModel.load_trained_model` or
-SB3's own ``Algorithm.load(...)``.
+can be loaded back via the algorithm wrappers'
+``load_trained_model(...)`` classmethod (e.g.
+:func:`sb3_ros_support.td3.TD3.load_trained_model`,
+:func:`sb3_ros_support.sac.SAC.load_trained_model`, and the goal-env
+variants) or SB3's own ``Algorithm.load(...)``.
 
 Weights & Biases (optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

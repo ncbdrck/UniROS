@@ -54,7 +54,7 @@ cd UniROS/docker
 ./build.sh
 ./run_gui.sh
 
-# — or — slim (no CUDA in image, ~12 GB; matches the TIAGo pattern)
+# — or — slim (no CUDA in image, ~12 GB; CUDA from the host driver)
 ./build.sh --slim
 ./run_gui.sh -t uniros:noetic-slim
 ```

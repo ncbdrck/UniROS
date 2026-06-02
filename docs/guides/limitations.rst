@@ -28,8 +28,9 @@ Coverage of the example environments
 ------------------------------------
 
 The pre-built env matrix covers four robots × three tasks × sim/real
-× standard/goal variants — 54 registered Gymnasium IDs in total.
-See :doc:`/envs/index` for the full inventory.
+× standard/goal variants (48 core IDs) plus extra Kinect/ZED2 sensor
+variants for RX200 — 54 registered Gymnasium IDs in total. See
+:doc:`/envs/index` for the full inventory.
 
 Maturity varies across that matrix:
 
