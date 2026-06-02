@@ -1,15 +1,15 @@
 MuJoCo backend (experimental)
 =============================
 
-.. admonition:: Available (experimental) — not yet merged
+.. admonition:: Available (experimental)
    :class: warning
 
-   The MuJoCo simulation backend is **available but experimental**,
-   living on the MultiROS branch ``feature/mujoco-backend``. It is
-   usable today (reach, push, and pick-and-place envs run on it), but
-   it is not yet merged into a stable release, and its APIs, defaults,
+   The MuJoCo simulation backend is **available but experimental**.
+   It is usable today (reach, push, and pick-and-place envs run on
+   it), but it is not yet in a stable release, and its APIs, defaults,
    and structure may still change. The default, supported backend
-   remains **Gazebo** (see :doc:`env_creation_sim`).
+   remains **Gazebo** (see :doc:`env_creation_sim`). For install
+   steps, see :ref:`mujoco-install-steps` below.
 
 MultiROS is gaining a `MuJoCo <https://mujoco.org/>`_ simulation
 backend (via `mujoco_ros_pkgs
@@ -86,6 +86,8 @@ knowing when porting an env:
   real time.
 
 
+.. _mujoco-install-steps:
+
 Trying it
 ---------
 
@@ -130,7 +132,8 @@ monitoring.
 Status and limitations
 ----------------------
 
-* Branch ``feature/mujoco-backend`` on MultiROS; **not merged**.
+* Not yet in a stable release; available on an experimental MultiROS
+  branch (see install steps above).
 * Implemented: VX300S reach, push, and pick-and-place, each with a
   goal-conditioned (HER) variant.
 * Additional robots/tasks may follow.

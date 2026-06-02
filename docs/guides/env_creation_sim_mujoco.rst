@@ -1,15 +1,14 @@
 Creating a simulation environment (MuJoCo)
 ==========================================
 
-.. admonition:: Available (experimental) — not yet merged
+.. admonition:: Available (experimental)
    :class: warning
 
-   The MuJoCo backend is **available but experimental**, on the
-   MultiROS branch ``feature/mujoco-backend``; it is usable today but
-   not yet merged into a stable release, and APIs and defaults may
+   The MuJoCo backend is **available but experimental**; it is usable
+   today but not yet in a stable release, and APIs and defaults may
    change. For the stable Gazebo workflow see
-   :doc:`env_creation_sim`; for the backend overview see
-   :doc:`mujoco_backend`.
+   :doc:`env_creation_sim`; for the backend overview and install
+   steps see :doc:`mujoco_backend`.
 
 This guide walks through adding a new MuJoCo-based environment
 end-to-end. It mirrors the Gazebo guide (:doc:`env_creation_sim`) —
