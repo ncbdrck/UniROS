@@ -51,7 +51,7 @@ the framework.
 Extends :class:`realros.envs.RealBaseEnv.RealBaseEnv` (or its goal
 variant). Required:
 
-* ``_set_episode_init_params()`` — move to a home pose, reset
+* ``_set_init_params(options=None)`` — move to a home pose, reset
   gripper, etc.
 * Helpers the task env will call: ``get_joint_positions()``,
   ``move_to_joint_target(...)``, ``move_to_pose(...)``.
@@ -67,9 +67,13 @@ not spawn the driver process.
 Same gymnasium contract as the sim version:
 
 * ``observation_space`` / ``action_space`` defined in ``__init__``.
-* ``_get_obs()``, ``_set_action(action)``,
-  ``_check_if_done()``, ``_compute_reward(...)``.
-* ``_set_init_pose()`` for any task-side reset (e.g. resample target).
+* ``_get_observation()``, ``_set_action(action)``,
+  ``_compute_terminated(info=None)`` (and ``_compute_truncated`` if
+  not relying on the ``TimeLimit`` wrapper),
+  ``_get_reward(info=None)`` for non-goal envs or
+  ``compute_reward(achieved_goal, desired_goal, info)`` for goal envs.
+* ``_set_init_params(options=None)`` for any task-side reset (e.g.
+  resample target).
 
 Keep the same Gymnasium ID conventions you'd use in sim, but with a
 ``Real`` suffix:

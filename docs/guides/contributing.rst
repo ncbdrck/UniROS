@@ -46,7 +46,7 @@ For docs work specifically:
 
 .. code-block:: bash
 
-   cd ~/catkin_ws/src/UniROS
+   cd ~/uniros_ws/src/UniROS
    pip install -r docs/requirements.txt
    sphinx-build -b html docs docs/_build/html
 

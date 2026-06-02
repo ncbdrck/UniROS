@@ -12,7 +12,7 @@ Verify the workspace
 
 .. code-block:: bash
 
-   source ~/catkin_ws/devel/setup.bash
+   source ~/uniros_ws/devel/setup.bash
    python3 -c "import uniros, multiros, realros, rl_environments; print('OK')"
 
 If any package fails to import, make sure the workspace was built

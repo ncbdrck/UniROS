@@ -76,11 +76,11 @@ workspace for active development.
 Follow these steps:
 
 ```bash
-cd ~/catkin_ws/src
-git clone --recurse-submodules -b gymnasium https://github.com/ncbdrck/uniros
+cd ~/uniros_ws/src
+git clone --recurse-submodules -b gymnasium https://github.com/ncbdrck/UniROS.git
 
 # update the submodules to the latest version
-cd uniros
+cd UniROS
 git checkout gymnasium
 git submodule update --remote --recursive
 
@@ -124,7 +124,7 @@ source devel/setup.bash
     
     register(
          id='MyEnv-v0',
-         entry_point='multiros.templates.task_envs.MyTaskEnv:MyEnv',
+         entry_point='multiros.templates.task_envs.MyTaskEnv:MyTaskEnv',
          max_episode_steps=1000,
     )
     ```
@@ -190,7 +190,7 @@ Repository:
   booktitle = {GitHub repository},
   publisher = {GitHub},
   title = {UniROS: ROS-Based Reinforcement Learning Across Simulated and Real-world Robotics},
-  url = {https://github.com/ncbdrck/uniros},
+  url = {https://github.com/ncbdrck/UniROS},
   year = {2023}
 }
 ```

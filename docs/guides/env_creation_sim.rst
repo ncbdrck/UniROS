@@ -34,8 +34,7 @@ The robot env extends :class:`multiros.envs.GazeboBaseEnv.GazeboBaseEnv`
 spawning the robot model in Gazebo, pausing/unpausing physics,
 loading ROS controllers — so your job is to fill in:
 
-* ``_check_if_done()`` (often unused at this layer; see below).
-* ``_set_episode_init_params()`` — robot-side reset (move to home
+* ``_set_init_params(options=None)`` — robot-side reset (move to home
   pose, wait for controllers, etc.).
 * Optional helpers for the task layer (e.g. ``get_ee_pose()``,
   ``move_to_joint_target(joint_array)``).
@@ -63,13 +62,21 @@ A typical robot env constructor looks like::
 The task env extends your robot env and defines the gymnasium
 contract. Required overrides:
 
-* ``_get_obs()`` — return the observation array (or dict for goal envs).
+* ``_get_observation()`` — return the observation array (or dict for goal envs).
 * ``_set_action(action)`` — apply the action to the robot.
-* ``_check_if_done()`` — terminal-condition check.
-* ``_compute_reward(achieved_goal, desired_goal, info)`` for goal
-  envs, or ``_get_reward()`` for non-goal envs.
-* ``_set_init_pose()`` — task-side reset (e.g. randomise target,
-  reset object positions).
+* ``_compute_terminated(info=None)`` — terminal-condition check
+  (success / failure that should end the episode).
+* ``_compute_truncated(info=None)`` — wall-clock / step-limit
+  truncation; usually leave this to the ``TimeLimit`` wrapper and
+  return ``False`` here.
+* ``compute_reward(achieved_goal, desired_goal, info)`` (note: no
+  leading underscore — this is the gymnasium-robotics ``GoalEnv``
+  contract used by HER) for goal envs, or ``_get_reward(info=None)``
+  for non-goal envs.
+* ``_set_init_params(options=None)`` — task-side reset (e.g.
+  randomise target, reset object positions). Same name as the
+  robot-side hook above; override at whichever layer is more
+  natural for the task and call ``super()`` if you need both to run.
 
 The base class also wants you to declare ``observation_space`` and
 ``action_space`` in ``__init__``. Use ``gymnasium.spaces.Box`` (with
@@ -136,7 +143,7 @@ template. Loading the file:
 .. code-block:: python
 
    from multiros.utils.ros_common import ros_load_yaml
-   ros_load_yaml(pkg="my_pkg", file="config/my_task_config.yaml")
+   ros_load_yaml(pkg_name="my_pkg", file_name="my_task_config.yaml", ns="/")
    self.reward_coefficient = rospy.get_param("my_task/reward_coefficient")
 
 

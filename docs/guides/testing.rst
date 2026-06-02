@@ -42,7 +42,7 @@ From the root of any package:
 
 .. code-block:: bash
 
-   cd ~/catkin_ws/src/<package_name>
+   cd ~/uniros_ws/src/<package_name>
    python3 -m pytest tests/ -v
 
 Multiros and realros expect UniROS to be importable from a sibling
@@ -55,7 +55,7 @@ A complete sweep:
 
    for pkg in UniROS/uniros multiros_v1/multiros realros sb3_ros_support; do
        echo "=== $pkg ==="
-       (cd ~/catkin_ws/src/$pkg && python3 -m pytest tests/ -q)
+       (cd ~/uniros_ws/src/$pkg && python3 -m pytest tests/ -q)
    done
 
 
