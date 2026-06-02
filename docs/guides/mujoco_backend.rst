@@ -79,7 +79,7 @@ knowing when porting an env:
   ``scripts/mujoco_filtered_description.py`` does the same for launch
   files. The manufacturer URDF is reused unmodified.
 * **Stepping regimes.** ``MujocoBaseEnv`` supports the same real-time
-  loop as Gazebo (UniROS paper §7 — physics never pauses, a timer
+  loop as Gazebo (physics never pauses, a timer
   refreshes observations) and a paused-MDP loop, plus a deterministic
   fast-step mode (``sim_step_mode=2``) that advances the simulation
   explicitly with no wall-clock sleep, for training faster than
