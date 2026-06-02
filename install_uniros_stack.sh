@@ -460,6 +460,21 @@ install_mujoco_backend() {
     clone_if_missing "https://github.com/ubi-agni/mujoco_ros_pkgs.git" \
                      "$WORKSPACE_PATH/src/mujoco_ros_pkgs" -b noetic-devel
 
+    # Switch the multiros submodule onto the MuJoCo backend branch. The base
+    # install step above checked out 'gymnasium' (the stable backend); the
+    # MuJoCo backend lives on 'feature/mujoco-backend' and is not yet merged,
+    # so without this override the backend modules (multiros.envs.MujocoBaseEnv
+    # etc.) are absent and importing the backend raises ImportError.
+    if [[ -d "$WORKSPACE_PATH/src/uniros/multiros" ]]; then
+        info "Switching multiros submodule onto feature/mujoco-backend ..."
+        (cd "$WORKSPACE_PATH/src/uniros/multiros" \
+            && git fetch origin feature/mujoco-backend \
+            && git checkout feature/mujoco-backend \
+            && git pull --ff-only) \
+            || fail "Failed to switch multiros to feature/mujoco-backend"
+        ok "multiros now on feature/mujoco-backend"
+    fi
+
     # Clone the example VX300S MuJoCo environments that validate the backend
     # end-to-end (reach / push / pick-and-place, plus goal variants). Optional
     # but handy as a working reference for building your own MuJoCo task envs.
